@@ -1,0 +1,32 @@
+{
+	"name": "compono-kit/lists",
+	"description": "Implementations of compono-kit/lists-interfaces",
+	"minimum-stability": "dev",
+	"prefer-stable": true,
+	"license": "proprietary",
+	"authors": [
+		{
+			"name": "Benjamin Bruska",
+			"email": "benjamin.bruska@your-coder.de"
+		}
+	],
+	"require": {
+		"php": ">=8.0",
+		"compono-kit/lists-interfaces": "dev-main"
+	},
+	"repositories": {
+		"compono-kit/lists-interfaces": {
+			"type": "vcs",
+			"url": "git@github.com:compono-kit/lists-interfaces.git"
+		},
+		"compono-kit/types-interfaces": {
+			"type": "vcs",
+			"url": "git@github.com:compono-kit/types-interfaces.git"
+		}
+	},
+	"autoload": {
+		"psr-4": {
+			"ComponoKit\\Types\\Lists\\": "src/"
+		}
+	}
+}
