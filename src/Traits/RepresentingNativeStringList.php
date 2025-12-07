@@ -2,8 +2,8 @@
 
 namespace ComponoKit\Types\Lists\Traits;
 
-use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Interfaces\RepresentsType;
+use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Interfaces\RepresentsNativeStringList;
 
 trait RepresentingNativeStringList
@@ -42,7 +42,7 @@ trait RepresentingNativeStringList
 
 		foreach ( $list as $index => $value )
 		{
-			if ( !$this->exists( $index ) )
+			if ( !isset( $this->strings[ $index ] ) )
 			{
 				return false;
 			}
@@ -89,18 +89,6 @@ trait RepresentingNativeStringList
 		reset( $this->strings );
 	}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->strings[ $index ] );
-	}
-
-	public function get( int $index ): string
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->strings[ $index ];
-	}
-
 	public function count(): int
 	{
 		return count( $this->strings );
@@ -124,7 +112,7 @@ trait RepresentingNativeStringList
 
 	private function guardIndexExists( int $index ): void
 	{
-		if ( $this->exists( $index ) )
+		if ( !isset( $this->strings[ $index ] ) )
 		{
 			throw new MissingIndexException( 'Index does not exist: ' . $index );
 		}

@@ -14,6 +14,9 @@
 		"php": ">=8.0",
 		"compono-kit/lists-interfaces": "dev-main"
 	},
+	"require-dev": {
+		"phpunit/phpunit": "^9.0.0"
+	},
 	"repositories": {
 		"compono-kit/lists-interfaces": {
 			"type": "vcs",
@@ -27,6 +30,11 @@
 	"autoload": {
 		"psr-4": {
 			"ComponoKit\\Types\\Lists\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"ComponoKit\\Types\\Lists\\Tests\\": "tests/"
 		}
 	}
 }

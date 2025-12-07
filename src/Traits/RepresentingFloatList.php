@@ -2,9 +2,9 @@
 
 namespace ComponoKit\Types\Lists\Traits;
 
-use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Interfaces\RepresentsFloat;
 use ComponoKit\Types\Interfaces\RepresentsType;
+use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Interfaces\RepresentsFloatList;
 
 trait RepresentingFloatList
@@ -43,12 +43,12 @@ trait RepresentingFloatList
 
 		foreach ( $list as $index => $type )
 		{
-			if ( !$this->exists( $index ) )
+			if ( !isset( $this->floatTypes[ $index ] ) )
 			{
 				return false;
 			}
 
-			if ( !$type->equals( $this->get( $index ) ) )
+			if ( !$type->equals( $this->floatTypes[ $index ] ) )
 			{
 				return false;
 			}
@@ -106,18 +106,6 @@ trait RepresentingFloatList
 		reset( $this->floatTypes );
 	}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->floatTypes[ $index ] );
-	}
-
-	public function get( int $index ): RepresentsFloat
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->floatTypes[ $index ];
-	}
-
 	public function count(): int
 	{
 		return count( $this->floatTypes );
@@ -141,7 +129,7 @@ trait RepresentingFloatList
 
 	private function guardIndexExists( int $index ): void
 	{
-		if ( $this->exists( $index ) )
+		if ( !isset( $this->floatTypes[ $index ] ) )
 		{
 			throw new MissingIndexException( 'Index does not exist: ' . $index );
 		}

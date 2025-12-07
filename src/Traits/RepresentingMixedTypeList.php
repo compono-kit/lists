@@ -2,8 +2,8 @@
 
 namespace ComponoKit\Types\Lists\Traits;
 
-use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Interfaces\RepresentsType;
+use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedTypeList;
 
 trait RepresentingMixedTypeList
@@ -42,12 +42,12 @@ trait RepresentingMixedTypeList
 
 		foreach ( $list as $index => $type )
 		{
-			if ( !$this->exists( $index ) )
+			if ( !isset( $this->mixedTypes[ $index ] ) )
 			{
 				return false;
 			}
 
-			if ( !$type->equals( $this->get( $index ) ) )
+			if ( !$type->equals( $this->mixedTypes[ $index ] ) )
 			{
 				return false;
 			}
@@ -108,18 +108,6 @@ trait RepresentingMixedTypeList
 		reset( $this->mixedTypes );
 	}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->mixedTypes[ $index ] );
-	}
-
-	public function get( int $index ): RepresentsType
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->mixedTypes[ $index ];
-	}
-
 	public function count(): int
 	{
 		return count( $this->mixedTypes );
@@ -143,7 +131,7 @@ trait RepresentingMixedTypeList
 
 	private function guardIndexExists( int $index ): void
 	{
-		if ( $this->exists( $index ) )
+		if ( !isset( $this->mixedTypes[ $index ] ) )
 		{
 			throw new MissingIndexException( 'Index does not exist: ' . $index );
 		}

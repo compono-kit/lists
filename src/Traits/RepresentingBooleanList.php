@@ -2,9 +2,9 @@
 
 namespace ComponoKit\Types\Lists\Traits;
 
-use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Interfaces\RepresentsBoolean;
 use ComponoKit\Types\Interfaces\RepresentsType;
+use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanList;
 
 trait RepresentingBooleanList
@@ -43,12 +43,12 @@ trait RepresentingBooleanList
 
 		foreach ( $list as $index => $type )
 		{
-			if ( !$this->exists( $index ) )
+			if ( !isset( $this->booleanTypes[ $index ] ) )
 			{
 				return false;
 			}
 
-			if ( !$type->equals( $this->get( $index ) ) )
+			if ( !$type->equals( $this->booleanTypes[ $index ] ) )
 			{
 				return false;
 			}
@@ -106,32 +106,9 @@ trait RepresentingBooleanList
 		reset( $this->booleanTypes );
 	}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->booleanTypes[ $index ] );
-	}
-
-	public function get( int $index ): RepresentsBoolean
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->booleanTypes[ $index ];
-	}
-
 	public function count(): int
 	{
 		return count( $this->booleanTypes );
-	}
-
-	public function toJson( bool $pretty = false ): string
-	{
-		$flags = JSON_THROW_ON_ERROR;
-		if ( $pretty )
-		{
-			$flags |= JSON_PRETTY_PRINT;
-		}
-
-		return json_encode( $this->booleanTypes, $flags );
 	}
 
 	public function jsonSerialize(): array
@@ -141,7 +118,7 @@ trait RepresentingBooleanList
 
 	private function guardIndexExists( int $index ): void
 	{
-		if ( $this->exists( $index ) )
+		if ( !isset( $this->booleanTypes[ $index ] ) )
 		{
 			throw new MissingIndexException( 'Index does not exist: ' . $index );
 		}

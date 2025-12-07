@@ -2,8 +2,8 @@
 
 namespace ComponoKit\Types\Lists\Traits;
 
-use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Interfaces\RepresentsType;
+use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Interfaces\RepresentsNativeBooleanList;
 
 trait RepresentingNativeBooleanList
@@ -42,7 +42,7 @@ trait RepresentingNativeBooleanList
 
 		foreach ( $list as $index => $value )
 		{
-			if ( !$this->exists( $index ) )
+			if ( !isset( $this->booleans[ $index ] ) )
 			{
 				return false;
 			}
@@ -89,18 +89,6 @@ trait RepresentingNativeBooleanList
 		reset( $this->booleans );
 	}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->booleans[ $index ] );
-	}
-
-	public function get( int $index ): bool
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->booleans[ $index ];
-	}
-
 	public function count(): int
 	{
 		return count( $this->booleans );
@@ -124,7 +112,7 @@ trait RepresentingNativeBooleanList
 
 	private function guardIndexExists( int $index ): void
 	{
-		if ( $this->exists( $index ) )
+		if ( !isset( $this->booleans [ $index ] ) )
 		{
 			throw new MissingIndexException( 'Index does not exist: ' . $index );
 		}

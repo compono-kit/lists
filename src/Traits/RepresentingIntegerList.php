@@ -2,9 +2,9 @@
 
 namespace ComponoKit\Types\Lists\Traits;
 
-use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Interfaces\RepresentsInteger;
 use ComponoKit\Types\Interfaces\RepresentsType;
+use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Interfaces\RepresentsIntegerList;
 
 trait RepresentingIntegerList
@@ -43,12 +43,12 @@ trait RepresentingIntegerList
 
 		foreach ( $list as $index => $type )
 		{
-			if ( !$this->exists( $index ) )
+			if ( !isset( $this->integerTypes[ $index ] ) )
 			{
 				return false;
 			}
 
-			if ( !$type->equals( $this->get( $index ) ) )
+			if ( !$type->equals( $this->integerTypes[ $index ] ) )
 			{
 				return false;
 			}
@@ -106,18 +106,6 @@ trait RepresentingIntegerList
 		reset( $this->integerTypes );
 	}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->integerTypes[ $index ] );
-	}
-
-	public function get( int $index ): RepresentsInteger
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->integerTypes[ $index ];
-	}
-
 	public function count(): int
 	{
 		return count( $this->integerTypes );
@@ -141,7 +129,7 @@ trait RepresentingIntegerList
 
 	private function guardIndexExists( int $index ): void
 	{
-		if ( $this->exists( $index ) )
+		if ( !isset( $this->integerTypes[ $index ] ) )
 		{
 			throw new MissingIndexException( 'Index does not exist: ' . $index );
 		}

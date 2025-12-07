@@ -1,0 +1,13 @@
+<?php declare(strict_types=1);
+
+namespace ComponoKit\Types\Lists\Immutables;
+
+use ComponoKit\Types\Interfaces\RepresentsType;
+
+class MixedTypeList extends AbstractMixedTypeList
+{
+	public static function isValueValid( RepresentsType $type ): bool
+	{
+		return true;
+	}
+}

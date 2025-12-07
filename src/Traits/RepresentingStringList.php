@@ -2,9 +2,9 @@
 
 namespace ComponoKit\Types\Lists\Traits;
 
-use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Interfaces\RepresentsString;
 use ComponoKit\Types\Interfaces\RepresentsType;
+use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringList;
 
 trait RepresentingStringList
@@ -43,12 +43,12 @@ trait RepresentingStringList
 
 		foreach ( $list as $index => $type )
 		{
-			if ( !$this->exists( $index ) )
+			if ( !isset( $this->stringTypes[ $index ] ) )
 			{
 				return false;
 			}
 
-			if ( !$type->equals( $this->get( $index ) ) )
+			if ( !$type->equals( $this->stringTypes[ $index ] ) )
 			{
 				return false;
 			}
@@ -109,32 +109,9 @@ trait RepresentingStringList
 		reset( $this->stringTypes );
 	}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->stringTypes[ $index ] );
-	}
-
-	public function get( int $index ): RepresentsString
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->stringTypes[ $index ];
-	}
-
 	public function count(): int
 	{
 		return count( $this->stringTypes );
-	}
-
-	public function toJson( bool $pretty = false ): string
-	{
-		$flags = JSON_THROW_ON_ERROR;
-		if ( $pretty )
-		{
-			$flags |= JSON_PRETTY_PRINT;
-		}
-
-		return json_encode( $this->stringTypes, $flags );
 	}
 
 	public function jsonSerialize(): array
@@ -144,7 +121,7 @@ trait RepresentingStringList
 
 	private function guardIndexExists( int $index ): void
 	{
-		if ( $this->exists( $index ) )
+		if ( !isset( $this->stringTypes[ $index ] ) )
 		{
 			throw new MissingIndexException( 'Index does not exist: ' . $index );
 		}
