@@ -4,6 +4,7 @@ namespace ComponoKit\Types\Lists\Traits;
 
 use ComponoKit\Types\Interfaces\RepresentsType;
 use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
+use ComponoKit\Types\Lists\Interfaces\MatchesType;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedTypeList;
 
 trait RepresentingMixedTypeList
@@ -83,11 +84,6 @@ trait RepresentingMixedTypeList
 		}
 	}
 
-	public function current(): RepresentsType
-	{
-		return current( $this->mixedTypes );
-	}
-
 	public function next(): void
 	{
 		next( $this->mixedTypes );
@@ -108,9 +104,37 @@ trait RepresentingMixedTypeList
 		reset( $this->mixedTypes );
 	}
 
+	public function current(): RepresentsType
+	{
+		return current( $this->mixedTypes );
+	}
+
+	public function first(): RepresentsType
+	{
+		return $this->mixedTypes[ array_keys( $this->mixedTypes )[0] ];
+	}
+
+	public function last(): RepresentsType
+	{
+		return $this->mixedTypes[ array_keys( $this->mixedTypes )[ count( $this->mixedTypes ) - 1 ] ];
+	}
+
 	public function count(): int
 	{
 		return count( $this->mixedTypes );
+	}
+
+	public function findIndex( MatchesType $matcher ): ?int
+	{
+		foreach ( $this->mixedTypes as $index => $type )
+		{
+			if ( $matcher->matches( $type ) )
+			{
+				return $index;
+			}
+		}
+
+		return null;
 	}
 
 	public function toJson( bool $pretty = false ): string

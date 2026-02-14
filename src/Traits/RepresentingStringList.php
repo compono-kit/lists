@@ -5,7 +5,8 @@ namespace ComponoKit\Types\Lists\Traits;
 use ComponoKit\Types\Interfaces\RepresentsString;
 use ComponoKit\Types\Interfaces\RepresentsType;
 use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
-use ComponoKit\Types\Lists\Interfaces\RepresentsStringList;
+use ComponoKit\Types\Lists\Interfaces\MatchesType;
+use ComponoKit\Types\Lists\Interfaces\RepresentsStringTypeList;
 
 trait RepresentingStringList
 {
@@ -24,7 +25,7 @@ trait RepresentingStringList
 		}
 
 		/**
-		 * @var RepresentsStringList $type
+		 * @var RepresentsStringTypeList $type
 		 */
 		if ( $this->count() !== $type->count() )
 		{
@@ -34,7 +35,7 @@ trait RepresentingStringList
 		return $this->equalsValues( $type );
 	}
 
-	public function equalsValues( RepresentsStringList $list ): bool
+	public function equalsValues( RepresentsStringTypeList $list ): bool
 	{
 		if ( $list->count() !== $this->count() )
 		{
@@ -84,11 +85,6 @@ trait RepresentingStringList
 		}
 	}
 
-	public function current(): RepresentsString
-	{
-		return current( $this->stringTypes );
-	}
-
 	public function next(): void
 	{
 		next( $this->stringTypes );
@@ -109,9 +105,48 @@ trait RepresentingStringList
 		reset( $this->stringTypes );
 	}
 
+	public function current(): RepresentsString
+	{
+		return current( $this->stringTypes );
+	}
+
+	public function first(): RepresentsString
+	{
+		return $this->stringTypes[ array_keys( $this->stringTypes )[0] ];
+	}
+
+	public function last(): RepresentsString
+	{
+		return $this->stringTypes[ array_keys( $this->stringTypes )[ count( $this->stringTypes ) - 1 ] ];
+	}
+
+	public function findIndex( MatchesType $matcher ): ?int
+	{
+		foreach ( $this->stringTypes as $index => $type )
+		{
+			if ( $matcher->matches( $type ) )
+			{
+				return $index;
+			}
+		}
+
+		return null;
+	}
+
 	public function count(): int
 	{
 		return count( $this->stringTypes );
+	}
+
+	public function toJson( bool $pretty = false ): string
+	{
+		$flags = JSON_THROW_ON_ERROR;
+		if ( $pretty )
+		{
+			$flags |= JSON_PRETTY_PRINT;
+		}
+
+		return json_encode( $this->stringTypes, $flags );
 	}
 
 	public function jsonSerialize(): array
