@@ -192,7 +192,10 @@ abstract class AbstractFloatTypeList implements RepresentsImmutableFloatTypeList
 	 */
 	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
 	{
-		return new static( array_slice( $this->floatTypes, $index, $count, $preserveIndices ) );
+		foreach ( array_slice( $this->floatTypes, $index, $count, $preserveIndices ) as $types )
+		{
+			yield new static( $types );
+		}
 	}
 
 	private function existsIn( RepresentsFloat $typeToCheck, RepresentsList $list ): bool

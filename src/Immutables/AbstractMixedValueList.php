@@ -6,9 +6,9 @@ use ComponoKit\Types\Lists\Exceptions\InvalidMixedValueListException;
 use ComponoKit\Types\Lists\Immutables\Traits\RepresentingImmutableMixedValueList;
 use ComponoKit\Types\Lists\Interfaces\ComparesValues;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableMixedValueList;
+use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedValueList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 
 abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueList
 {
@@ -186,13 +186,16 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 	/**
 	 * @param int      $index
 	 * @param int|null $count
-	 * @param bool      $preserveIndices
+	 * @param bool     $preserveIndices
 	 *
 	 * @return \Iterator<int, RepresentsMixedValueList>
 	 */
 	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
 	{
-		return new static( array_slice( $this->mixedValues, $index, $count, $preserveIndices ) );
+		foreach ( array_slice( $this->mixedValues, $index, $count, $preserveIndices ) as $values )
+		{
+			yield new static( $values );
+		}
 	}
 
 	private function existsIn( int $valueToCheck, RepresentsList $list ): bool

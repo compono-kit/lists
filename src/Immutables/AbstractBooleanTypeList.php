@@ -192,7 +192,10 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 	 */
 	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
 	{
-		return new static( array_slice( $this->booleanTypes, $index, $count, $preserveIndices ) );
+		foreach ( array_slice( $this->booleanTypes, $index, $count, $preserveIndices ) as $types )
+		{
+			yield new static( $types );
+		}
 	}
 
 	private function existsIn( RepresentsBoolean $typeToCheck, RepresentsList $list ): bool

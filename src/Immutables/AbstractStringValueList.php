@@ -192,7 +192,10 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 	 */
 	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
 	{
-		return new static( array_slice( $this->strings, $index, $count, $preserveIndices ) );
+		foreach ( array_slice( $this->strings, $index, $count, $preserveIndices ) as $values )
+		{
+			yield new static( $values );
+		}
 	}
 
 	private function existsIn( string $valueToCheck, RepresentsList $list ): bool

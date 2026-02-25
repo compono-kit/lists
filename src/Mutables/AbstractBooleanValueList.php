@@ -80,7 +80,10 @@ abstract class AbstractBooleanValueList implements RepresentsMutableBooleanValue
 	 */
 	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
 	{
-		return new static( array_slice( $this->booleans, $index, $count, $preserveIndices ) );
+		foreach ( array_slice( $this->booleans, $index, $count, $preserveIndices ) as $values )
+		{
+			yield new static( $values );
+		}
 	}
 
 	protected function validate( array $values ): void

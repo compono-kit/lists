@@ -191,7 +191,10 @@ abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
 	 */
 	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
 	{
-		return new static( array_slice( $this->mixedTypes, $index, $count, $preserveIndices ) );
+		foreach ( array_slice( $this->mixedTypes, $index, $count, $preserveIndices ) as $types )
+		{
+			yield new static( $types );
+		}
 	}
 
 	protected function validate( array $types ): void

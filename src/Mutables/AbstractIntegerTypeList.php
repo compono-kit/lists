@@ -81,7 +81,10 @@ abstract class AbstractIntegerTypeList implements RepresentsMutableIntegerTypeLi
 	 */
 	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
 	{
-		return new static( array_slice( $this->integerTypes, $index, $count, $preserveIndices ) );
+		foreach ( array_slice( $this->integerTypes, $index, $count, $preserveIndices ) as $types )
+		{
+			yield new static( $types );
+		}
 	}
 
 	protected function validate( array $types ): void

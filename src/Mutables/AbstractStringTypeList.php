@@ -81,7 +81,10 @@ abstract class AbstractStringTypeList implements RepresentsMutableStringTypeList
 	 */
 	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
 	{
-		return new static( array_slice( $this->stringTypes, $index, $count, $preserveIndices ) );
+		foreach ( array_slice( $this->stringTypes, $index, $count, $preserveIndices ) as $types )
+		{
+			yield new static( $types );
+		}
 	}
 
 	protected function validate( array $types ): void

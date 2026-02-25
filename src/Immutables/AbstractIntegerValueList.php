@@ -192,7 +192,10 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 	 */
 	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
 	{
-		return new static( array_slice( $this->integers, $index, $count, $preserveIndices ) );
+		foreach ( array_slice( $this->integers, $index, $count, $preserveIndices ) as $values )
+		{
+			yield new static( $values );
+		}
 	}
 
 	private function existsIn( int $valueToCheck, RepresentsList $list ): bool
