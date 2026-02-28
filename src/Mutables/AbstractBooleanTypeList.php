@@ -12,12 +12,11 @@ abstract class AbstractBooleanTypeList implements RepresentsMutableBooleanTypeLi
 {
 	use RepresentingMutableBooleanTypeList;
 
-	/**
-	 * @param RepresentsBoolean[] $booleanTypes
-	 */
-	public function __construct( private array $booleanTypes = [] )
+	public function __construct( RepresentsBoolean ...$booleanTypes )
 	{
 		$this->validate( $booleanTypes );
+
+		$this->booleanTypes = $booleanTypes;
 	}
 
 	abstract protected static function isValueValid( RepresentsBoolean $type ): bool;
@@ -27,64 +26,53 @@ abstract class AbstractBooleanTypeList implements RepresentsMutableBooleanTypeLi
 	 */
 	public static function fromJson( string $json ): static
 	{
-		return new static( json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
 	public function diff( RepresentsBooleanTypeList $list ): RepresentsBooleanTypeList
 	{
 		return new static(
-			array_udiff(
+			...array_udiff(
 				$this->booleanTypes,
 				$list,
 				function ( RepresentsBoolean $firstType, RepresentsBoolean $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	public function intersect( RepresentsBooleanTypeList $list ): RepresentsBooleanTypeList
 	{
 		return new static(
-			array_uintersect(
+			...array_uintersect(
 				$this->booleanTypes,
 				$list,
 				function ( RepresentsBoolean $firstType, RepresentsBoolean $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 1 : 0;
 				}
-			),
+			)
 		);
 	}
 
 	/**
-	 * @param int  $count
-	 * @param bool $preserveIndices
+	 * @param int $count
 	 *
 	 * @return \Iterator<int, RepresentsBooleanTypeList>
 	 */
-	public function split( int $count, bool $preserveIndices = false ): \Iterator
+	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->booleanTypes, $count, $preserveIndices ) as $types )
+		foreach ( array_chunk( $this->booleanTypes, $count ) as $types )
 		{
-			yield new static( $types );
+			yield new static( ...$types );
 		}
 	}
 
-	/**
-	 * @param int      $index
-	 * @param int|null $count
-	 * @param bool     $preserveIndices
-	 *
-	 * @return \Iterator<int, RepresentsBooleanTypeList>
-	 */
-	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
+	public function slice( int $index, ?int $count = null ): void
 	{
-		foreach ( array_slice( $this->booleanTypes, $index, $count, $preserveIndices ) as $types )
-		{
-			yield new static( $types );
-		}
+		$this->booleanTypes = array_slice( $this->booleanTypes, $index, $count );
 	}
 
 	protected function validate( array $types ): void

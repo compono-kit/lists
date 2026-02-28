@@ -22,50 +22,33 @@ trait RepresentingImmutableIntegerValueList
 		return $this->integers[ $index ];
 	}
 
-	public function set( int $index, int $value ): static
-	{
-		$integers           = $this->integers;
-		$integers[ $index ] = $value;
-
-		return new static( $integers );
-	}
-
 	public function remove( int $index ): static
 	{
 		$this->guardIndexExists( $index );
 
 		$values = $this->integers;
-		unset( $values[ $index ] );
+		array_splice( $values, $index, 1 );
 
-		return new static( $values );
+		return new static( ...$values );
 	}
 
 	public function append( int...$values ): static
 	{
-		$currentValues = $this->integers;
-		foreach ( $values as $value )
-		{
-			$currentValues[] = $value;
-		}
-
-		return new static( $currentValues );
+		return new static( ...$this->integers, ...$values );
 	}
 
 	public function prepend( int...$values ): static
 	{
-		$currentValues = $this->integers;
-		$currentValues = $values + $currentValues;
-
-		return new static( $currentValues );
+		return new static( ...$values, ...$this->integers );
 	}
 
 	public function appendList( RepresentsIntegerValueList|RepresentsIntegerTypeList $list ): static
 	{
-		return new static( $this->toNativeType() + ($list instanceof RepresentsIntegerValueList ? $list->toNativeType() : $list->toIntegers()) );
+		return new static( ...$this->toNativeType(), ...($list instanceof RepresentsIntegerValueList ? $list->toNativeType() : $list->toIntegers()) );
 	}
 
 	public function prependList( RepresentsIntegerValueList|RepresentsIntegerTypeList $list ): static
 	{
-		return new static( $list instanceof RepresentsIntegerValueList ? $list->toNativeType() : $list->toIntegers() + $this->toNativeType() );
+		return new static( ...($list instanceof RepresentsIntegerValueList ? $list->toNativeType() : $list->toIntegers()), ...$this->toNativeType() );
 	}
 }

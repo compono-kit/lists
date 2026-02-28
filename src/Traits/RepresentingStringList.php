@@ -10,11 +10,24 @@ use ComponoKit\Types\Lists\Interfaces\RepresentsStringTypeList;
 
 trait RepresentingStringList
 {
-	/**
-	 * @param RepresentsString[] $stringTypes
-	 */
-	public function __construct( private array $stringTypes = [] )
+	/** @var RepresentsString[] */
+	private array $stringTypes;
+
+	public function __construct( RepresentsString ...$stringTypes )
 	{
+		$this->stringTypes = $stringTypes;
+	}
+
+	public function exists( int $index ): bool
+	{
+		return isset( $this->stringTypes[ $index ] );
+	}
+
+	public function get( int $index ): RepresentsString
+	{
+		$this->guardIndexExists( $index );
+
+		return $this->stringTypes[ $index ];
 	}
 
 	public function equals( RepresentsType $type ): bool

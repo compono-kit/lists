@@ -12,12 +12,11 @@ abstract class AbstractFloatTypeList implements RepresentsMutableFloatTypeList
 {
 	use RepresentingMutableFloatTypeList;
 
-	/**
-	 * @param RepresentsFloat[] $floatTypes
-	 */
-	public function __construct( private array $floatTypes = [] )
+	public function __construct( RepresentsFloat ...$floatTypes )
 	{
 		$this->validate( $floatTypes );
+
+		$this->floatTypes = $floatTypes;
 	}
 
 	abstract protected static function isValueValid( RepresentsFloat $type ): bool;
@@ -27,64 +26,53 @@ abstract class AbstractFloatTypeList implements RepresentsMutableFloatTypeList
 	 */
 	public static function fromJson( string $json ): static
 	{
-		return new static( json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
 	public function diff( RepresentsFloatTypeList $list ): RepresentsFloatTypeList
 	{
 		return new static(
-			array_udiff(
+			...array_udiff(
 				$this->floatTypes,
 				$list,
 				function ( RepresentsFloat $firstType, RepresentsFloat $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	public function intersect( RepresentsFloatTypeList $list ): RepresentsFloatTypeList
 	{
 		return new static(
-			array_uintersect(
+			...array_uintersect(
 				$this->floatTypes,
 				$list,
 				function ( RepresentsFloat $firstType, RepresentsFloat $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 1 : 0;
 				}
-			),
+			)
 		);
 	}
 
 	/**
-	 * @param int  $count
-	 * @param bool $preserveIndices
+	 * @param int $count
 	 *
 	 * @return \Iterator<int, RepresentsFloatTypeList>
 	 */
-	public function split( int $count, bool $preserveIndices = false ): \Iterator
+	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->floatTypes, $count, $preserveIndices ) as $types )
+		foreach ( array_chunk( $this->floatTypes, $count ) as $types )
 		{
-			yield new static( $types );
+			yield new static( ...$types );
 		}
 	}
 
-	/**
-	 * @param int      $index
-	 * @param int|null $count
-	 * @param bool     $preserveIndices
-	 *
-	 * @return \Iterator<int, RepresentsFloatTypeList>
-	 */
-	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
+	public function slice( int $index, ?int $count = null ): void
 	{
-		foreach ( array_slice( $this->floatTypes, $index, $count, $preserveIndices ) as $types )
-		{
-			yield new static( $types );
-		}
+		$this->floatTypes = array_slice( $this->floatTypes, $index, $count );
 	}
 
 	protected function validate( array $types ): void

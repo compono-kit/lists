@@ -12,12 +12,11 @@ abstract class AbstractIntegerTypeList implements RepresentsMutableIntegerTypeLi
 {
 	use RepresentingMutableIntegerTypeList;
 
-	/**
-	 * @param RepresentsInteger[] $integerTypes
-	 */
-	public function __construct( private array $integerTypes = [] )
+	public function __construct( RepresentsInteger ...$integerTypes )
 	{
 		$this->validate( $integerTypes );
+
+		$this->integerTypes = $integerTypes;
 	}
 
 	abstract protected static function isValueValid( RepresentsInteger $type ): bool;
@@ -27,64 +26,53 @@ abstract class AbstractIntegerTypeList implements RepresentsMutableIntegerTypeLi
 	 */
 	public static function fromJson( string $json ): static
 	{
-		return new static( json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
 	public function diff( RepresentsIntegerTypeList $list ): RepresentsIntegerTypeList
 	{
 		return new static(
-			array_udiff(
+			...array_udiff(
 				$this->integerTypes,
 				$list,
 				function ( RepresentsInteger $firstType, RepresentsInteger $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	public function intersect( RepresentsIntegerTypeList $list ): RepresentsIntegerTypeList
 	{
 		return new static(
-			array_uintersect(
+			...array_uintersect(
 				$this->integerTypes,
 				$list,
 				function ( RepresentsInteger $firstType, RepresentsInteger $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 1 : 0;
 				}
-			),
+			)
 		);
 	}
 
 	/**
-	 * @param int  $count
-	 * @param bool $preserveIndices
+	 * @param int $count
 	 *
 	 * @return \Iterator<int, RepresentsIntegerTypeList>
 	 */
-	public function split( int $count, bool $preserveIndices = false ): \Iterator
+	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->integerTypes, $count, $preserveIndices ) as $types )
+		foreach ( array_chunk( $this->integerTypes, $count ) as $types )
 		{
-			yield new static( $types );
+			yield new static( ...$types );
 		}
 	}
 
-	/**
-	 * @param int      $index
-	 * @param int|null $count
-	 * @param bool     $preserveIndices
-	 *
-	 * @return \Iterator<int, RepresentsIntegerTypeList>
-	 */
-	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
+	public function slice( int $index, ?int $count = null ): void
 	{
-		foreach ( array_slice( $this->integerTypes, $index, $count, $preserveIndices ) as $types )
-		{
-			yield new static( $types );
-		}
+		$this->integerTypes = array_slice( $this->integerTypes, $index, $count );
 	}
 
 	protected function validate( array $types ): void

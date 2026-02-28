@@ -22,50 +22,33 @@ trait RepresentingImmutableFloatValueList
 		return $this->floats[ $index ];
 	}
 
-	public function set( int $index, float $value ): static
-	{
-		$floats           = $this->floats;
-		$floats[ $index ] = $value;
-
-		return new static( $floats );
-	}
-
 	public function remove( int $index ): static
 	{
 		$this->guardIndexExists( $index );
 
 		$values = $this->floats;
-		unset( $values[ $index ] );
+		array_splice( $values, $index, 1 );
 
-		return new static( $values );
+		return new static( ...$values );
 	}
 
 	public function append( float...$values ): static
 	{
-		$currentValues = $this->floats;
-		foreach ( $values as $value )
-		{
-			$currentValues[] = $value;
-		}
-
-		return new static( $currentValues );
+		return new static( ...$this->floats, ...$values );
 	}
 
 	public function prepend( float...$values ): static
 	{
-		$currentValues = $this->floats;
-		$currentValues = $values + $currentValues;
-
-		return new static( $currentValues );
+		return new static( ...$values, ...$this->floats );
 	}
 
 	public function appendList( RepresentsFloatValueList|RepresentsFloatTypeList $list ): static
 	{
-		return new static( $this->toNativeType() + ($list instanceof RepresentsFloatValueList ? $list->toNativeType() : $list->toFloats()) );
+		return new static( ...$this->toNativeType(), ...($list instanceof RepresentsFloatValueList ? $list->toNativeType() : $list->toFloats()) );
 	}
 
 	public function prependList( RepresentsFloatValueList|RepresentsFloatTypeList $list ): static
 	{
-		return new static( $list instanceof RepresentsFloatValueList ? $list->toNativeType() : $list->toFloats() + $this->toNativeType() );
+		return new static( ...($list instanceof RepresentsFloatValueList ? $list->toNativeType() : $list->toFloats()), ...$this->toNativeType() );
 	}
 }

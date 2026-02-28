@@ -14,12 +14,11 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 {
 	use RepresentingImmutableMixedValueList;
 
-	/**
-	 * @param array<int, int|float|string|bool|array> $mixedValues
-	 */
-	public function __construct( private array $mixedValues = [] )
+	public function __construct( int|float|string|bool|array ...$mixedValues )
 	{
 		$this->validate( $mixedValues );
+
+		$this->mixedValues = $mixedValues;
 	}
 
 	abstract protected static function isValueValid( int|float|string|bool|array $value ): bool;
@@ -29,7 +28,7 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 	 */
 	public static function fromJson( string $json ): static
 	{
-		return new static( json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
 	public function exists( int $index ): bool
@@ -44,56 +43,49 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 		return $this->mixedValues[ $index ];
 	}
 
-	public function set( int $index, int|float|string|bool|array $value ): static
-	{
-		$mixedValues           = $this->mixedValues;
-		$mixedValues[ $index ] = $value;
-
-		return new static( $mixedValues );
-	}
-
 	public function remove( int $index ): static
 	{
 		$this->guardIndexExists( $index );
 
 		$values = $this->mixedValues;
-		unset( $values[ $index ] );
+		array_splice( $values, $index, 1 );
 
-		return new static( $values );
+		return new static( ...$values );
 	}
 
-	public function append( int|float|string|bool|array...$types ): static
+	public function replace( int $index, int|float|string|bool|array $value ): static
 	{
-		$currentTypes = $this->mixedValues;
-		foreach ( $types as $type )
-		{
-			$currentTypes[] = $type;
-		}
+		$this->guardIndexExists( $index );
 
-		return new static( $currentTypes );
+		$values           = $this->mixedValues;
+		$values[ $index ] = $value;
+
+		return new static( ...$values );
 	}
 
-	public function prepend( int|float|string|bool|array...$types ): static
+	public function append( int|float|string|bool|array...$values ): static
 	{
-		$currentTypes = $this->mixedValues;
-		$currentTypes = $types + $currentTypes;
+		return new static( ...$this->mixedValues, ...$values );
+	}
 
-		return new static( $currentTypes );
+	public function prepend( int|float|string|bool|array...$values ): static
+	{
+		return new static( ...$values, ...$this->mixedValues );
 	}
 
 	public function appendList( RepresentsMixedValueList|RepresentsMixedTypeList $list ): static
 	{
-		return new static( $this->toNativeType() + $list->toNativeType() );
+		return new static( ...$this->toNativeType(), ...$list->toNativeType() );
 	}
 
 	public function prependList( RepresentsMixedValueList|RepresentsMixedTypeList $list ): static
 	{
-		return new static( $list->toNativeType() + $this->toNativeType() );
+		return new static( ...$list->toNativeType(), ...$this->toNativeType() );
 	}
 
 	public function reverse(): static
 	{
-		return new static( array_reverse( $this->mixedValues ) );
+		return new static( ...array_reverse( $this->mixedValues ) );
 	}
 
 	public function shuffle(): static
@@ -101,15 +93,7 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 		$values = $this->mixedValues;
 		shuffle( $values );
 
-		return new static( $values );
-	}
-
-	public function replace( int $index, int|float|string|bool|array $value ): static
-	{
-		$values           = $this->mixedValues;
-		$values[ $index ] = $value;
-
-		return new static( $values );
+		return new static( ...$values );
 	}
 
 	public function unique(): static
@@ -120,7 +104,7 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 		{
 			if ( !$this->existsIn( $value, $uniqueValues ) )
 			{
-				$uniqueValues->append( $value );
+				$uniqueValues = $uniqueValues->append( $value );
 			}
 		}
 
@@ -129,80 +113,69 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 
 	public function sort( ComparesValues $comparer ): static
 	{
-		$types = $this->mixedValues;
+		$values = $this->mixedValues;
 		usort(
-			$types,
+			$values,
 			function ( int $firstValue, int $secondValue ) use ( $comparer ): int
 			{
 				return $comparer->compare( $firstValue, $secondValue );
 			}
 		);
 
-		return new static( $types );
+		return new static( ...$values );
 	}
 
 	public function diff( RepresentsMixedValueList $list ): RepresentsMixedValueList
 	{
 		return new static(
-			array_udiff(
+			...array_udiff(
 				$this->mixedValues,
-				$list,
+				$list->toNativeType(),
 				function ( int $firstType, int $secondType ): int
 				{
 					return $firstType === $secondType ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	public function intersect( RepresentsMixedValueList $list ): RepresentsMixedValueList
 	{
 		return new static(
-			array_uintersect(
+			...array_uintersect(
 				$this->mixedValues,
-				$list,
+				$list->toNativeType(),
 				function ( int $firstType, int $secondType ): int
 				{
-					return $firstType === $secondType ? 1 : 0;
+					return $firstType === $secondType ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	/**
-	 * @param int  $count
-	 * @param bool $preserveIndices
+	 * @param int $count
 	 *
 	 * @return \Iterator<int, RepresentsMixedValueList>
 	 */
-	public function split( int $count, bool $preserveIndices = false ): \Iterator
+	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->mixedValues, $count, $preserveIndices ) as $types )
+		foreach ( array_chunk( $this->mixedValues, $count ) as $values )
 		{
-			yield new static( $types );
+			yield new static( ...$values );
 		}
 	}
 
-	/**
-	 * @param int      $index
-	 * @param int|null $count
-	 * @param bool     $preserveIndices
-	 *
-	 * @return \Iterator<int, RepresentsMixedValueList>
-	 */
-	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
+	public function slice( int $index, ?int $count = null ): static
 	{
-		foreach ( array_slice( $this->mixedValues, $index, $count, $preserveIndices ) as $values )
-		{
-			yield new static( $values );
-		}
+		return new static( ...array_slice( $this->mixedValues, $index, $count ) );
 	}
 
 	private function existsIn( int $valueToCheck, RepresentsList $list ): bool
 	{
-		foreach ( $list as $type )
+		foreach ( $list as $value )
 		{
-			if ( $type->equals( $valueToCheck ) )
+			if ( $value->equals( $valueToCheck ) )
 			{
 				return true;
 			}

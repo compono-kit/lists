@@ -11,47 +11,38 @@ trait RepresentingMutableBooleanValueList
 {
 	use RepresentingBooleanValueList;
 
-	public function offsetExists( $offset ): bool
+	public function remove( int $index ): void
 	{
-		return $this->exists( $offset );
+		$this->guardIndexExists( $index );
+
+		array_splice( $this->booleans, $index, 1 );
 	}
 
-	public function offsetGet( $offset ): bool
+	public function replace( int $index, bool $value ): void
 	{
-		return $this->get( $offset );
-	}
+		$this->guardIndexExists( $index );
 
-	public function offsetSet( $offset, $value ): void
-	{
-		$this->set( $offset, $value );
-	}
-
-	public function offsetUnset( $offset ): void
-	{
-		$this->remove( $offset );
+		$this->booleans[ $index ] = $value;
 	}
 
 	public function append( bool...$values ): void
 	{
-		foreach ( $values as $value )
-		{
-			$this->booleans[] = $value;
-		}
+		array_push( $this->booleans, ...$values );
 	}
 
 	public function prepend( bool...$values ): void
 	{
-		$this->booleans = $values + $this->booleans;
+		array_unshift( $this->booleans, ...$values );
 	}
 
 	public function appendList( RepresentsBooleanValueList|RepresentsBooleanTypeList $list ): void
 	{
-		$this->booleans += $list instanceof RepresentsBooleanTypeList ? $list->toBooleans() : $list->toNativeType();
+		array_push( $this->booleans, ...($list instanceof RepresentsBooleanTypeList ? $list->toBooleans() : $list->toNativeType()) );
 	}
 
 	public function prependList( RepresentsBooleanValueList|RepresentsBooleanTypeList $list ): void
 	{
-		$this->booleans = ($list instanceof RepresentsBooleanTypeList ? $list->toBooleans() : $list->toNativeType()) + $this->booleans;
+		array_unshift( $this->booleans, ...($list instanceof RepresentsBooleanTypeList ? $list->toBooleans() : $list->toNativeType()) );
 	}
 
 	public function reverse(): void
@@ -62,11 +53,6 @@ trait RepresentingMutableBooleanValueList
 	public function shuffle(): void
 	{
 		shuffle( $this->booleans );
-	}
-
-	public function replace( int $index, bool $value ): void
-	{
-		$this->booleans[ $index ] = $value;
 	}
 
 	public function unique(): void
@@ -83,27 +69,5 @@ trait RepresentingMutableBooleanValueList
 				return $comparer->compare( $firstValue, $secondValue );
 			}
 		);
-	}
-
-	private function exists( int $index ): bool
-	{
-		return isset( $this->booleans[ $index ] );
-	}
-
-	private function get( int $index ): bool
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->booleans[ $index ];
-	}
-
-	private function set( int $index, bool $value ): void
-	{
-		$this->booleans[ $index ] = $value;
-	}
-
-	private function remove( int $index ): void
-	{
-		unset( $this->booleans[ $index ] );
 	}
 }

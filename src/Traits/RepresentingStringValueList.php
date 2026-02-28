@@ -9,11 +9,24 @@ use ComponoKit\Types\Lists\Interfaces\RepresentsStringValueList;
 
 trait RepresentingStringValueList
 {
-	/**
-	 * @param string[] $strings
-	 */
-	public function __construct( private array $strings = [] )
+	/** @var string[] */
+	private array $strings;
+
+	public function __construct( string ...$strings )
 	{
+		$this->strings = $strings;
+	}
+
+	public function exists( int $index ): bool
+	{
+		return isset( $this->strings[ $index ] );
+	}
+
+	public function get( int $index ): string
+	{
+		$this->guardIndexExists( $index );
+
+		return $this->strings[ $index ];
 	}
 
 	public function equals( RepresentsType $type ): bool

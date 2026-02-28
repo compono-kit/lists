@@ -9,11 +9,24 @@ use ComponoKit\Types\Lists\Interfaces\RepresentsMixedTypeList;
 
 trait RepresentingMixedTypeList
 {
-	/**
-	 * @param RepresentsType[] $mixedTypes
-	 */
-	public function __construct( private array $mixedTypes = [] )
+	/** @var RepresentsType[] */
+	private array $mixedTypes;
+
+	public function __construct( RepresentsType ...$mixedTypes )
 	{
+		$this->mixedTypes = $mixedTypes;
+	}
+
+	public function exists( int $index ): bool
+	{
+		return isset( $this->mixedTypes[ $index ] );
+	}
+
+	public function get( int $index ): RepresentsType
+	{
+		$this->guardIndexExists( $index );
+
+		return $this->mixedTypes[ $index ];
 	}
 
 	public function equals( RepresentsType $type ): bool

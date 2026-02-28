@@ -11,47 +11,38 @@ trait RepresentingMutableStringTypeList
 {
 	use RepresentingStringList;
 
-	public function offsetExists( $offset ): bool
+	public function remove( int $index ): void
 	{
-		return $this->exists( $offset );
+		$this->guardIndexExists( $index );
+
+		array_splice( $this->stringTypes, $index, 1 );
 	}
 
-	public function offsetGet( $offset ): RepresentsString
+	public function replace( int $index, RepresentsString $type ): void
 	{
-		return $this->get( $offset );
-	}
+		$this->guardIndexExists( $index );
 
-	public function offsetSet( $offset, $value ): void
-	{
-		$this->set( $offset, $value );
-	}
-
-	public function offsetUnset( $offset ): void
-	{
-		$this->remove( $offset );
+		$this->stringTypes[ $index ] = $type;
 	}
 
 	public function append( RepresentsString...$types ): void
 	{
-		foreach ( $types as $type )
-		{
-			$this->stringTypes[] = $type;
-		}
+		array_push( $this->stringTypes, ...$types );
 	}
 
 	public function prepend( RepresentsString...$types ): void
 	{
-		$this->stringTypes = $types + $this->stringTypes;
+		array_unshift( $this->stringTypes, ...$types );
 	}
 
 	public function appendList( RepresentsStringTypeList $list ): void
 	{
-		$this->stringTypes += $list->toNativeType();
+		array_push( $this->stringTypes, ...$list->toNativeType() );
 	}
 
 	public function prependList( RepresentsStringTypeList $list ): void
 	{
-		$this->stringTypes = $list->toNativeType() + $this->stringTypes;
+		array_unshift( $this->stringTypes, ...$list->toNativeType() );
 	}
 
 	public function reverse(): void
@@ -62,11 +53,6 @@ trait RepresentingMutableStringTypeList
 	public function shuffle(): void
 	{
 		shuffle( $this->stringTypes );
-	}
-
-	public function replace( int $index, RepresentsString $type ): void
-	{
-		$this->stringTypes[ $index ] = $type;
 	}
 
 	public function unique(): void
@@ -83,27 +69,5 @@ trait RepresentingMutableStringTypeList
 				return $comparer->compare( $firstType, $secondType );
 			}
 		);
-	}
-
-	private function exists( int $index ): bool
-	{
-		return isset( $this->stringTypes[ $index ] );
-	}
-
-	private function get( int $index ): RepresentsString
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->stringTypes[ $index ];
-	}
-
-	private function set( int $index, RepresentsString $value ): void
-	{
-		$this->stringTypes[ $index ] = $value;
-	}
-
-	private function remove( int $index ): void
-	{
-		unset( $this->stringTypes[ $index ] );
 	}
 }

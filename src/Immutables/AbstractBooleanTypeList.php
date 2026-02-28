@@ -14,12 +14,11 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 {
 	use RepresentingBooleanTypeList;
 
-	/**
-	 * @param RepresentsBoolean[] $booleanTypes
-	 */
-	public function __construct( private array $booleanTypes = [] )
+	public function __construct( RepresentsBoolean ...$booleanTypes )
 	{
 		$this->validate( $booleanTypes );
+
+		$this->booleanTypes = $booleanTypes;
 	}
 
 	abstract protected static function isValueValid( RepresentsBoolean $type ): bool;
@@ -29,7 +28,7 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 	 */
 	public static function fromJson( string $json ): static
 	{
-		return new static( json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
 	public function exists( int $index ): bool
@@ -44,56 +43,49 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 		return $this->booleanTypes[ $index ];
 	}
 
-	public function set( int $index, RepresentsBoolean $value ): static
-	{
-		$booleanTypes           = $this->booleanTypes;
-		$booleanTypes[ $index ] = $value;
-
-		return new static( $booleanTypes );
-	}
-
 	public function remove( int $index ): static
 	{
 		$this->guardIndexExists( $index );
 
-		$values = $this->booleanTypes;
-		unset( $values[ $index ] );
+		$types = $this->booleanTypes;
+		array_splice( $types, $index, 1 );
 
-		return new static( $values );
+		return new static( ...$types );
+	}
+
+	public function replace( int $index, RepresentsBoolean $type ): static
+	{
+		$this->guardIndexExists( $index );
+
+		$types           = $this->booleanTypes;
+		$types[ $index ] = $type;
+
+		return new static( ...$types );
 	}
 
 	public function append( RepresentsBoolean...$types ): static
 	{
-		$currentTypes = $this->booleanTypes;
-		foreach ( $types as $type )
-		{
-			$currentTypes[] = $type;
-		}
-
-		return new static( $currentTypes );
+		return new static( ...$this->booleanTypes, ...$types );
 	}
 
 	public function prepend( RepresentsBoolean...$types ): static
 	{
-		$currentTypes = $this->booleanTypes;
-		$currentTypes = $types + $currentTypes;
-
-		return new static( $currentTypes );
+		return new static( ...$types, ...$this->booleanTypes );
 	}
 
 	public function appendList( RepresentsBooleanTypeList $list ): static
 	{
-		return new static( $this->toNativeType() + $list->toNativeType() );
+		return new static( ...$this->toNativeType(), ...$list->toNativeType() );
 	}
 
 	public function prependList( RepresentsBooleanTypeList $list ): static
 	{
-		return new static( $list->toNativeType() + $this->toNativeType() );
+		return new static( ...$list->toNativeType(), ...$this->toNativeType() );
 	}
 
 	public function reverse(): static
 	{
-		return new static( array_reverse( $this->booleanTypes ) );
+		return new static( ...array_reverse( $this->booleanTypes ) );
 	}
 
 	public function shuffle(): static
@@ -101,15 +93,7 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 		$types = $this->booleanTypes;
 		shuffle( $types );
 
-		return new static( $types );
-	}
-
-	public function replace( int $index, RepresentsBoolean $type ): static
-	{
-		$types           = $this->booleanTypes;
-		$types[ $index ] = $type;
-
-		return new static( $types );
+		return new static( ...$types );
 	}
 
 	public function unique(): static
@@ -120,7 +104,7 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 		{
 			if ( !$this->existsIn( $type, $uniqueTypes ) )
 			{
-				$uniqueTypes->append( $type );
+				$uniqueTypes = $uniqueTypes->append( $type );
 			}
 		}
 
@@ -138,64 +122,53 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 			}
 		);
 
-		return new static( $types );
+		return new static( ...$types );
 	}
 
 	public function diff( RepresentsBooleanTypeList $list ): RepresentsBooleanTypeList
 	{
 		return new static(
-			array_udiff(
+			...array_udiff(
 				$this->booleanTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsBoolean $firstType, RepresentsBoolean $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	public function intersect( RepresentsBooleanTypeList $list ): RepresentsBooleanTypeList
 	{
 		return new static(
-			array_uintersect(
+			...array_uintersect(
 				$this->booleanTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsBoolean $firstType, RepresentsBoolean $secondType ): int
 				{
-					return $firstType->equals( $secondType ) ? 1 : 0;
+					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	/**
-	 * @param int  $count
-	 * @param bool $preserveIndices
+	 * @param int $count
 	 *
 	 * @return \Iterator<int, RepresentsBooleanTypeList>
 	 */
-	public function split( int $count, bool $preserveIndices = false ): \Iterator
+	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->booleanTypes, $count, $preserveIndices ) as $types )
+		foreach ( array_chunk( $this->booleanTypes, $count ) as $types )
 		{
-			yield new static( $types );
+			yield new static( ...$types );
 		}
 	}
 
-	/**
-	 * @param int      $index
-	 * @param int|null $count
-	 * @param bool     $preserveIndices
-	 *
-	 * @return \Iterator<int, RepresentsBooleanTypeList>
-	 */
-	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
+	public function slice( int $index, ?int $count = null ): static
 	{
-		foreach ( array_slice( $this->booleanTypes, $index, $count, $preserveIndices ) as $types )
-		{
-			yield new static( $types );
-		}
+		return new static( ...array_slice( $this->booleanTypes, $index, $count ) );
 	}
 
 	private function existsIn( RepresentsBoolean $typeToCheck, RepresentsList $list ): bool

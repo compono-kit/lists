@@ -11,47 +11,38 @@ trait RepresentingMutableStringValueList
 {
 	use RepresentingStringValueList;
 
-	public function offsetExists( $offset ): bool
+	public function remove( int $index ): void
 	{
-		return $this->exists( $offset );
+		$this->guardIndexExists( $index );
+
+		array_splice( $this->strings, $index, 1 );
 	}
 
-	public function offsetGet( $offset ): string
+	public function replace( int $index, string $value ): void
 	{
-		return $this->get( $offset );
-	}
+		$this->guardIndexExists( $index );
 
-	public function offsetSet( $offset, $value ): void
-	{
-		$this->set( $offset, $value );
-	}
-
-	public function offsetUnset( $offset ): void
-	{
-		$this->remove( $offset );
+		$this->strings[ $index ] = $value;
 	}
 
 	public function append( string...$values ): void
 	{
-		foreach ( $values as $value )
-		{
-			$this->strings[] = $value;
-		}
+		array_push( $this->strings, ...$values );
 	}
 
 	public function prepend( string...$values ): void
 	{
-		$this->strings = $values + $this->strings;
+		array_unshift( $this->strings, ...$values );
 	}
 
 	public function appendList( RepresentsStringValueList|RepresentsStringTypeList $list ): void
 	{
-		$this->strings += $list instanceof RepresentsStringTypeList ? $list->toStrings() : $list->toNativeType();
+		array_push( $this->strings, ...($list instanceof RepresentsStringTypeList ? $list->toStrings() : $list->toNativeType()) );
 	}
 
 	public function prependList( RepresentsStringValueList|RepresentsStringTypeList $list ): void
 	{
-		$this->strings = ($list instanceof RepresentsStringTypeList ? $list->toStrings() : $list->toNativeType()) + $this->strings;
+		array_unshift( $this->strings, ...($list instanceof RepresentsStringTypeList ? $list->toStrings() : $list->toNativeType()) );
 	}
 
 	public function reverse(): void
@@ -62,11 +53,6 @@ trait RepresentingMutableStringValueList
 	public function shuffle(): void
 	{
 		shuffle( $this->strings );
-	}
-
-	public function replace( int $index, string $value ): void
-	{
-		$this->strings[ $index ] = $value;
 	}
 
 	public function unique(): void
@@ -83,27 +69,5 @@ trait RepresentingMutableStringValueList
 				return $comparer->compare( $firstValue, $secondValue );
 			}
 		);
-	}
-
-	private function exists( int $index ): bool
-	{
-		return isset( $this->strings[ $index ] );
-	}
-
-	private function get( int $index ): string
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->strings[ $index ];
-	}
-
-	private function set( int $index, string $value ): void
-	{
-		$this->strings[ $index ] = $value;
-	}
-
-	private function remove( int $index ): void
-	{
-		unset( $this->strings[ $index ] );
 	}
 }

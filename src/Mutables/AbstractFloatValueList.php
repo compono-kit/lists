@@ -11,12 +11,11 @@ abstract class AbstractFloatValueList implements RepresentsMutableFloatValueList
 {
 	use RepresentingMutableFloatValueList;
 
-	/**
-	 * @param float[] $floats
-	 */
-	public function __construct( private array $floats = [] )
+	public function __construct( float ...$floats )
 	{
 		$this->validate( $floats );
+
+		$this->floats = $floats;
 	}
 
 	abstract protected static function isValueValid( float $value ): bool;
@@ -26,64 +25,53 @@ abstract class AbstractFloatValueList implements RepresentsMutableFloatValueList
 	 */
 	public static function fromJson( string $json ): static
 	{
-		return new static( json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
 	public function diff( RepresentsFloatValueList $list ): RepresentsFloatValueList
 	{
 		return new static(
-			array_udiff(
+			...array_udiff(
 				$this->floats,
 				$list,
 				function ( float $firstValue, float $secondValue ): int
 				{
 					return $firstValue === $secondValue ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	public function intersect( RepresentsFloatValueList $list ): RepresentsFloatValueList
 	{
 		return new static(
-			array_uintersect(
+			...array_uintersect(
 				$this->floats,
 				$list,
 				function ( float $firstValue, float $secondValue ): int
 				{
 					return $firstValue === $secondValue ? 1 : 0;
 				}
-			),
+			)
 		);
 	}
 
 	/**
-	 * @param int  $count
-	 * @param bool $preserveIndices
+	 * @param int $count
 	 *
 	 * @return \Iterator<int, RepresentsFloatValueList>
 	 */
-	public function split( int $count, bool $preserveIndices = false ): \Iterator
+	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->floats, $count, $preserveIndices ) as $types )
+		foreach ( array_chunk( $this->floats, $count ) as $types )
 		{
-			yield new static( $types );
+			yield new static( ...$types );
 		}
 	}
 
-	/**
-	 * @param int      $index
-	 * @param int|null $count
-	 * @param bool     $preserveIndices
-	 *
-	 * @return \Iterator<int, RepresentsFloatValueList>
-	 */
-	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
+	public function slice( int $index, ?int $count = null ): void
 	{
-		foreach ( array_slice( $this->floats, $index, $count, $preserveIndices ) as $values )
-		{
-			yield new static( $values );
-		}
+		$this->floats = array_slice( $this->floats, $index, $count );
 	}
 
 	protected function validate( array $values ): void

@@ -12,12 +12,11 @@ abstract class AbstractMixedTypeList implements RepresentsMutableMixedTypeList
 {
 	use RepresentingMutableMixedTypeList;
 
-	/**
-	 * @param RepresentsType[] $mixedTypes
-	 */
-	public function __construct( private array $mixedTypes = [] )
+	public function __construct( RepresentsType ...$mixedTypes )
 	{
 		$this->validate( $mixedTypes );
+
+		$this->mixedTypes = $mixedTypes;
 	}
 
 	abstract protected static function isValueValid( RepresentsType $type ): bool;
@@ -27,64 +26,53 @@ abstract class AbstractMixedTypeList implements RepresentsMutableMixedTypeList
 	 */
 	public static function fromJson( string $json ): static
 	{
-		return new static( json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
 	public function diff( RepresentsMixedTypeList $list ): RepresentsMixedTypeList
 	{
 		return new static(
-			array_udiff(
+			...array_udiff(
 				$this->mixedTypes,
 				$list,
 				function ( RepresentsType $firstType, RepresentsType $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	public function intersect( RepresentsMixedTypeList $list ): RepresentsMixedTypeList
 	{
 		return new static(
-			array_uintersect(
+			...array_uintersect(
 				$this->mixedTypes,
 				$list,
 				function ( RepresentsType $firstType, RepresentsType $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 1 : 0;
 				}
-			),
+			)
 		);
 	}
 
 	/**
-	 * @param int  $count
-	 * @param bool $preserveIndices
+	 * @param int $count
 	 *
 	 * @return \Iterator<int, RepresentsMixedTypeList>
 	 */
-	public function split( int $count, bool $preserveIndices = false ): \Iterator
+	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->mixedTypes, $count, $preserveIndices ) as $types )
+		foreach ( array_chunk( $this->mixedTypes, $count ) as $types )
 		{
-			yield new static( $types );
+			yield new static( ...$types );
 		}
 	}
 
-	/**
-	 * @param int      $index
-	 * @param int|null $count
-	 * @param bool     $preserveIndices
-	 *
-	 * @return \Iterator<int, RepresentsMixedTypeList>
-	 */
-	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
+	public function slice( int $index, ?int $count = null ): void
 	{
-		foreach ( array_slice( $this->mixedTypes, $index, $count, $preserveIndices ) as $types )
-		{
-			yield new static( $types );
-		}
+		$this->mixedTypes = array_slice( $this->mixedTypes, $index, $count );
 	}
 
 	protected function validate( array $types ): void

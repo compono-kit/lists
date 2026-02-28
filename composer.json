@@ -15,7 +15,9 @@
 		"compono-kit/lists-interfaces": "dev-main"
 	},
 	"require-dev": {
-		"phpunit/phpunit": "^9.0.0"
+		"ext-intl": "*",
+		"phpunit/phpunit": "^9.0.0",
+		"compono-kit/types": "dev-feature/8.0"
 	},
 	"repositories": {
 		"compono-kit/lists-interfaces": {
@@ -25,6 +27,10 @@
 		"compono-kit/types-interfaces": {
 			"type": "vcs",
 			"url": "git@github.com:compono-kit/types-interfaces.git"
+		},
+		"compono-kit/types": {
+			"type": "vcs",
+			"url": "git@github.com:compono-kit/types.git"
 		}
 	},
 	"autoload": {

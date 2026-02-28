@@ -11,47 +11,38 @@ trait RepresentingMutableIntegerValueList
 {
 	use RepresentingIntegerValueList;
 
-	public function offsetExists( $offset ): bool
+	public function remove( int $index ): void
 	{
-		return $this->exists( $offset );
+		$this->guardIndexExists( $index );
+
+		array_splice( $this->integers, $index, 1 );
 	}
 
-	public function offsetGet( $offset ): int
+	public function replace( int $index, int $value ): void
 	{
-		return $this->get( $offset );
-	}
+		$this->guardIndexExists( $index );
 
-	public function offsetSet( $offset, $value ): void
-	{
-		$this->set( $offset, $value );
-	}
-
-	public function offsetUnset( $offset ): void
-	{
-		$this->remove( $offset );
+		$this->integers[ $index ] = $value;
 	}
 
 	public function append( int...$values ): void
 	{
-		foreach ( $values as $value )
-		{
-			$this->integers[] = $value;
-		}
+		array_push( $this->integers, ...$values );
 	}
 
 	public function prepend( int...$values ): void
 	{
-		$this->integers = $values + $this->integers;
+		array_unshift( $this->integers, ...$values );
 	}
 
 	public function appendList( RepresentsIntegerValueList|RepresentsIntegerTypeList $list ): void
 	{
-		$this->integers += $list instanceof RepresentsIntegerTypeList ? $list->toIntegers() : $list->toNativeType();
+		array_push( $this->integers, ...($list instanceof RepresentsIntegerTypeList ? $list->toIntegers() : $list->toNativeType()) );
 	}
 
 	public function prependList( RepresentsIntegerValueList|RepresentsIntegerTypeList $list ): void
 	{
-		$this->integers = ($list instanceof RepresentsIntegerTypeList ? $list->toIntegers() : $list->toNativeType()) + $this->integers;
+		array_unshift( $this->integers, ...($list instanceof RepresentsIntegerTypeList ? $list->toIntegers() : $list->toNativeType()) );
 	}
 
 	public function reverse(): void
@@ -62,11 +53,6 @@ trait RepresentingMutableIntegerValueList
 	public function shuffle(): void
 	{
 		shuffle( $this->integers );
-	}
-
-	public function replace( int $index, int $value ): void
-	{
-		$this->integers[ $index ] = $value;
 	}
 
 	public function unique(): void
@@ -83,27 +69,5 @@ trait RepresentingMutableIntegerValueList
 				return $comparer->compare( $firstValue, $secondValue );
 			}
 		);
-	}
-
-	private function exists( int $index ): bool
-	{
-		return isset( $this->integers[ $index ] );
-	}
-
-	private function get( int $index ): int
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->integers[ $index ];
-	}
-
-	private function set( int $index, int $value ): void
-	{
-		$this->integers[ $index ] = $value;
-	}
-
-	private function remove( int $index ): void
-	{
-		unset( $this->integers[ $index ] );
 	}
 }

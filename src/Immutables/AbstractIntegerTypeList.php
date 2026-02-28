@@ -14,12 +14,11 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 {
 	use RepresentingIntegerTypeList;
 
-	/**
-	 * @param RepresentsInteger[] $integerTypes
-	 */
-	public function __construct( private array $integerTypes = [] )
+	public function __construct( RepresentsInteger ...$integerTypes )
 	{
 		$this->validate( $integerTypes );
+
+		$this->integerTypes = $integerTypes;
 	}
 
 	abstract protected static function isValueValid( RepresentsInteger $type ): bool;
@@ -29,7 +28,7 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 	 */
 	public static function fromJson( string $json ): static
 	{
-		return new static( json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
 	public function exists( int $index ): bool
@@ -44,56 +43,49 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 		return $this->integerTypes[ $index ];
 	}
 
-	public function set( int $index, RepresentsInteger $value ): static
-	{
-		$integerTypes           = $this->integerTypes;
-		$integerTypes[ $index ] = $value;
-
-		return new static( $integerTypes );
-	}
-
 	public function remove( int $index ): static
 	{
 		$this->guardIndexExists( $index );
 
-		$values = $this->integerTypes;
-		unset( $values[ $index ] );
+		$types = $this->integerTypes;
+		array_splice( $types, $index, 1 );
 
-		return new static( $values );
+		return new static( ...$types );
+	}
+
+	public function replace( int $index, RepresentsInteger $type ): static
+	{
+		$this->guardIndexExists( $index );
+
+		$types           = $this->integerTypes;
+		$types[ $index ] = $type;
+
+		return new static( ...$types );
 	}
 
 	public function append( RepresentsInteger...$types ): static
 	{
-		$currentTypes = $this->integerTypes;
-		foreach ( $types as $type )
-		{
-			$currentTypes[] = $type;
-		}
-
-		return new static( $currentTypes );
+		return new static( ...$this->integerTypes, ...$types );
 	}
 
 	public function prepend( RepresentsInteger...$types ): static
 	{
-		$currentTypes = $this->integerTypes;
-		$currentTypes = $types + $currentTypes;
-
-		return new static( $currentTypes );
+		return new static( ...$types, ...$this->integerTypes );
 	}
 
 	public function appendList( RepresentsIntegerTypeList $list ): static
 	{
-		return new static( $this->toNativeType() + $list->toNativeType() );
+		return new static( ...$this->toNativeType(), ...$list->toNativeType() );
 	}
 
 	public function prependList( RepresentsIntegerTypeList $list ): static
 	{
-		return new static( $list->toNativeType() + $this->toNativeType() );
+		return new static( ...$list->toNativeType(), ...$this->toNativeType() );
 	}
 
 	public function reverse(): static
 	{
-		return new static( array_reverse( $this->integerTypes ) );
+		return new static( ...array_reverse( $this->integerTypes ) );
 	}
 
 	public function shuffle(): static
@@ -101,15 +93,7 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 		$types = $this->integerTypes;
 		shuffle( $types );
 
-		return new static( $types );
-	}
-
-	public function replace( int $index, RepresentsInteger $type ): static
-	{
-		$types           = $this->integerTypes;
-		$types[ $index ] = $type;
-
-		return new static( $types );
+		return new static( ...$types );
 	}
 
 	public function unique(): static
@@ -120,7 +104,7 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 		{
 			if ( !$this->existsIn( $type, $uniqueTypes ) )
 			{
-				$uniqueTypes->append( $type );
+				$uniqueTypes = $uniqueTypes->append( $type );
 			}
 		}
 
@@ -138,64 +122,53 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 			}
 		);
 
-		return new static( $types );
+		return new static( ...$types );
 	}
 
 	public function diff( RepresentsIntegerTypeList $list ): RepresentsIntegerTypeList
 	{
 		return new static(
-			array_udiff(
+			...array_udiff(
 				$this->integerTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsInteger $firstType, RepresentsInteger $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	public function intersect( RepresentsIntegerTypeList $list ): RepresentsIntegerTypeList
 	{
 		return new static(
-			array_uintersect(
+			...array_uintersect(
 				$this->integerTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsInteger $firstType, RepresentsInteger $secondType ): int
 				{
-					return $firstType->equals( $secondType ) ? 1 : 0;
+					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	/**
-	 * @param int  $count
-	 * @param bool $preserveIndices
+	 * @param int $count
 	 *
 	 * @return \Iterator<int, RepresentsIntegerTypeList>
 	 */
-	public function split( int $count, bool $preserveIndices = false ): \Iterator
+	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->integerTypes, $count, $preserveIndices ) as $types )
+		foreach ( array_chunk( $this->integerTypes, $count ) as $types )
 		{
-			yield new static( $types );
+			yield new static( ...$types );
 		}
 	}
 
-	/**
-	 * @param int      $index
-	 * @param int|null $count
-	 * @param bool     $preserveIndices
-	 *
-	 * @return \Iterator<int, RepresentsIntegerTypeList>
-	 */
-	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
+	public function slice( int $index, ?int $count = null ): static
 	{
-		foreach ( array_slice( $this->integerTypes, $index, $count, $preserveIndices ) as $types )
-		{
-			yield new static( $types );
-		}
+		return new static( ...array_slice( $this->integerTypes, $index, $count ) );
 	}
 
 	protected function validate( array $types ): void

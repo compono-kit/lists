@@ -14,12 +14,11 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 {
 	use RepresentingStringList;
 
-	/**
-	 * @param RepresentsString[] $stringTypes
-	 */
-	public function __construct( private array $stringTypes = [] )
+	public function __construct( RepresentsString ...$stringTypes )
 	{
 		$this->validate( $stringTypes );
+
+		$this->stringTypes = $stringTypes;
 	}
 
 	abstract protected static function isValueValid( RepresentsString $type ): bool;
@@ -37,14 +36,6 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 		return isset( $this->stringTypes[ $index ] );
 	}
 
-	public function set( int $index, RepresentsString $value ): static
-	{
-		$stringTypes           = $this->stringTypes;
-		$stringTypes[ $index ] = $value;
-
-		return new static( $stringTypes );
-	}
-
 	public function get( int $index ): RepresentsString
 	{
 		$this->guardIndexExists( $index );
@@ -56,44 +47,45 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 	{
 		$this->guardIndexExists( $index );
 
-		$values = $this->stringTypes;
-		unset( $values[ $index ] );
+		$types = $this->stringTypes;
+		array_splice( $types, $index, 1 );
 
-		return new static( $values );
+		return new static( ...$types );
+	}
+
+	public function replace( int $index, RepresentsString $type ): static
+	{
+		$this->guardIndexExists( $index );
+
+		$types           = $this->stringTypes;
+		$types[ $index ] = $type;
+
+		return new static( ...$types );
 	}
 
 	public function append( RepresentsString...$types ): static
 	{
-		$currentTypes = $this->stringTypes;
-		foreach ( $types as $type )
-		{
-			$currentTypes[] = $type;
-		}
-
-		return new static( $currentTypes );
+		return new static( ...$this->stringTypes, ...$types );
 	}
 
 	public function prepend( RepresentsString...$types ): static
 	{
-		$currentTypes = $this->stringTypes;
-		$currentTypes = $types + $currentTypes;
-
-		return new static( $currentTypes );
+		return new static( ...$types, ...$this->stringTypes );
 	}
 
 	public function appendList( RepresentsStringTypeList $list ): static
 	{
-		return new static( $this->toNativeType() + $list->toNativeType() );
+		return new static( ...$this->toNativeType(), ...$list->toNativeType() );
 	}
 
 	public function prependList( RepresentsStringTypeList $list ): static
 	{
-		return new static( $list->toNativeType() + $this->toNativeType() );
+		return new static( ...$list->toNativeType(), ...$this->toNativeType() );
 	}
 
 	public function reverse(): static
 	{
-		return new static( array_reverse( $this->stringTypes ) );
+		return new static( ...array_reverse( $this->stringTypes ) );
 	}
 
 	public function shuffle(): static
@@ -101,15 +93,7 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 		$types = $this->stringTypes;
 		shuffle( $types );
 
-		return new static( $types );
-	}
-
-	public function replace( int $index, RepresentsString $type ): static
-	{
-		$types           = $this->stringTypes;
-		$types[ $index ] = $type;
-
-		return new static( $types );
+		return new static( ...$types );
 	}
 
 	public function unique(): static
@@ -120,7 +104,7 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 		{
 			if ( !$this->existsIn( $type, $uniqueTypes ) )
 			{
-				$uniqueTypes->append( $type );
+				$uniqueTypes = $uniqueTypes->append( $type );
 			}
 		}
 
@@ -138,64 +122,53 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 			}
 		);
 
-		return new static( $types );
+		return new static( ...$types );
 	}
 
 	public function diff( RepresentsStringTypeList $list ): RepresentsStringTypeList
 	{
 		return new static(
-			array_udiff(
+			...array_udiff(
 				$this->stringTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsString $firstType, RepresentsString $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	public function intersect( RepresentsStringTypeList $list ): RepresentsStringTypeList
 	{
 		return new static(
-			array_uintersect(
+			...array_uintersect(
 				$this->stringTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsString $firstType, RepresentsString $secondType ): int
 				{
-					return $firstType->equals( $secondType ) ? 1 : 0;
+					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	/**
-	 * @param int  $count
-	 * @param bool $preserveIndices
+	 * @param int $count
 	 *
 	 * @return \Iterator<int, RepresentsStringTypeList>
 	 */
-	public function split( int $count, bool $preserveIndices = false ): \Iterator
+	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->stringTypes, $count, $preserveIndices ) as $types )
+		foreach ( array_chunk( $this->stringTypes, $count ) as $types )
 		{
-			yield new static( $types );
+			yield new static( ...$types );
 		}
 	}
 
-	/**
-	 * @param int      $index
-	 * @param int|null $count
-	 * @param bool     $preserveIndices
-	 *
-	 * @return \Iterator<int, RepresentsStringTypeList>
-	 */
-	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
+	public function slice( int $index, ?int $count = null ): static
 	{
-		foreach ( array_slice( $this->stringTypes, $index, $count, $preserveIndices ) as $types )
-		{
-			yield new static( $types );
-		}
+		return new static( ...array_slice( $this->stringTypes, $index, $count ) );
 	}
 
 	protected function validate( array $types ): void

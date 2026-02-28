@@ -9,11 +9,24 @@ use ComponoKit\Types\Lists\Interfaces\RepresentsFloatValueList;
 
 trait RepresentingFloatValueList
 {
-	/**
-	 * @param float[] $floats
-	 */
-	public function __construct( private array $floats = [] )
+	/** @var float[] */
+	private array $floats;
+
+	public function __construct( float ...$floats )
 	{
+		$this->floats = $floats;
+	}
+
+	public function exists( int $index ): bool
+	{
+		return isset( $this->floats[ $index ] );
+	}
+
+	public function get( int $index ): float
+	{
+		$this->guardIndexExists( $index );
+
+		return $this->floats[ $index ];
 	}
 
 	public function equals( RepresentsType $type ): bool

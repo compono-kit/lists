@@ -17,9 +17,11 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 	/**
 	 * @param bool[] $booleans
 	 */
-	public function __construct( private array $booleans = [] )
+	public function __construct( bool ...$booleans )
 	{
 		$this->validate( $booleans );
+
+		$this->booleans = $booleans;
 	}
 
 	abstract protected static function isValueValid( bool $value ): bool;
@@ -29,7 +31,7 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 	 */
 	public static function fromJson( string $json ): static
 	{
-		return new static( json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
 	public function exists( int $index ): bool
@@ -44,56 +46,49 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 		return $this->booleans[ $index ];
 	}
 
-	public function set( int $index, bool $value ): static
-	{
-		$booleans           = $this->booleans;
-		$booleans[ $index ] = $value;
-
-		return new static( $booleans );
-	}
-
 	public function remove( int $index ): static
 	{
 		$this->guardIndexExists( $index );
 
 		$values = $this->booleans;
-		unset( $values[ $index ] );
+		array_splice( $values, $index, 1 );
 
-		return new static( $values );
+		return new static( ...$values );
 	}
 
-	public function append( bool...$types ): static
+	public function replace( int $index, bool $value ): static
 	{
-		$currentTypes = $this->booleans;
-		foreach ( $types as $type )
-		{
-			$currentTypes[] = $type;
-		}
+		$this->guardIndexExists( $index );
 
-		return new static( $currentTypes );
+		$values           = $this->booleans;
+		$values[ $index ] = $value;
+
+		return new static( ...$values );
 	}
 
-	public function prepend( bool...$types ): static
+	public function append( bool...$values ): static
 	{
-		$currentTypes = $this->booleans;
-		$currentTypes = $types + $currentTypes;
+		return new static( ...$this->booleans, ...$values );
+	}
 
-		return new static( $currentTypes );
+	public function prepend( bool...$values ): static
+	{
+		return new static( ...$values, ...$this->booleans );
 	}
 
 	public function appendList( RepresentsBooleanValueList|RepresentsBooleanTypeList $list ): static
 	{
-		return new static( $this->toNativeType() + $list->toNativeType() );
+		return new static( ...$this->toNativeType(), ...$list->toNativeType() );
 	}
 
 	public function prependList( RepresentsBooleanValueList|RepresentsBooleanTypeList $list ): static
 	{
-		return new static( $list->toNativeType() + $this->toNativeType() );
+		return new static( ...$list->toNativeType(), ...$this->toNativeType() );
 	}
 
 	public function reverse(): static
 	{
-		return new static( array_reverse( $this->booleans ) );
+		return new static( ...array_reverse( $this->booleans ) );
 	}
 
 	public function shuffle(): static
@@ -101,15 +96,7 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 		$values = $this->booleans;
 		shuffle( $values );
 
-		return new static( $values );
-	}
-
-	public function replace( int $index, bool $value ): static
-	{
-		$values           = $this->booleans;
-		$values[ $index ] = $value;
-
-		return new static( $values );
+		return new static( ...$values );
 	}
 
 	public function unique(): static
@@ -120,7 +107,7 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 		{
 			if ( !$this->existsIn( $value, $uniqueValues ) )
 			{
-				$uniqueValues->append( $value );
+				$uniqueValues = $uniqueValues->append( $value );
 			}
 		}
 
@@ -129,80 +116,69 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 
 	public function sort( ComparesValues $comparer ): static
 	{
-		$types = $this->booleans;
+		$values = $this->booleans;
 		usort(
-			$types,
+			$values,
 			function ( bool $firstValue, bool $secondValue ) use ( $comparer ): int
 			{
 				return $comparer->compare( $firstValue, $secondValue );
 			}
 		);
 
-		return new static( $types );
+		return new static( ...$values );
 	}
 
 	public function diff( RepresentsBooleanValueList $list ): RepresentsBooleanValueList
 	{
 		return new static(
-			array_udiff(
+			...array_udiff(
 				$this->booleans,
-				$list,
+				$list->toNativeType(),
 				function ( bool $firstType, bool $secondType ): int
 				{
 					return $firstType === $secondType ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	public function intersect( RepresentsBooleanValueList $list ): RepresentsBooleanValueList
 	{
 		return new static(
-			array_uintersect(
+			...array_uintersect(
 				$this->booleans,
-				$list,
+				$list->toNativeType(),
 				function ( bool $firstType, bool $secondType ): int
 				{
-					return $firstType === $secondType ? 1 : 0;
+					return $firstType === $secondType ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	/**
-	 * @param int  $count
-	 * @param bool $preserveIndices
+	 * @param int $count
 	 *
 	 * @return \Iterator<int, RepresentsBooleanValueList>
 	 */
-	public function split( int $count, bool $preserveIndices = false ): \Iterator
+	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->booleans, $count, $preserveIndices ) as $types )
+		foreach ( array_chunk( $this->booleans, $count ) as $values )
 		{
-			yield new static( $types );
+			yield new static( ...$values );
 		}
 	}
 
-	/**
-	 * @param int      $index
-	 * @param int|null $count
-	 * @param bool     $preserveIndices
-	 *
-	 * @return \Iterator<int, RepresentsBooleanValueList>
-	 */
-	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
+	public function slice( int $index, ?int $count = null ): static
 	{
-		foreach ( array_slice( $this->booleans, $index, $count, $preserveIndices ) as $values )
-		{
-			yield new static( $values );
-		}
+		return new static( ...array_slice( $this->booleans, $index, $count ) );
 	}
 
 	private function existsIn( bool $valueToCheck, RepresentsList $list ): bool
 	{
-		foreach ( $list as $type )
+		foreach ( $list as $value )
 		{
-			if ( $type->equals( $valueToCheck ) )
+			if ( $value->equals( $valueToCheck ) )
 			{
 				return true;
 			}

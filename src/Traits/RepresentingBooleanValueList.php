@@ -9,11 +9,24 @@ use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanValueList;
 
 trait RepresentingBooleanValueList
 {
-	/**
-	 * @param bool[] $booleans
-	 */
-	public function __construct( private array $booleans = [] )
+	/** @var bool[] */
+	private array $booleans;
+
+	public function __construct( bool ...$booleans )
 	{
+		$this->booleans = $booleans;
+	}
+
+	public function exists( int $index ): bool
+	{
+		return isset( $this->booleans[ $index ] );
+	}
+
+	public function get( int $index ): bool
+	{
+		$this->guardIndexExists( $index );
+
+		return $this->booleans[ $index ];
 	}
 
 	public function equals( RepresentsType $type ): bool

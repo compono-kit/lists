@@ -11,47 +11,38 @@ trait RepresentingMutableFloatTypeList
 {
 	use RepresentingFloatTypeList;
 
-	public function offsetExists( $offset ): bool
+	public function remove( int $index ): void
 	{
-		return $this->exists( $offset );
+		$this->guardIndexExists( $index );
+
+		array_splice( $this->floatTypes, $index, 1 );
 	}
 
-	public function offsetGet( $offset ): RepresentsFloat
+	public function replace( int $index, RepresentsFloat $type ): void
 	{
-		return $this->get( $offset );
-	}
+		$this->guardIndexExists( $index );
 
-	public function offsetSet( $offset, $value ): void
-	{
-		$this->set( $offset, $value );
-	}
-
-	public function offsetUnset( $offset ): void
-	{
-		$this->remove( $offset );
+		$this->floatTypes[ $index ] = $type;
 	}
 
 	public function append( RepresentsFloat...$types ): void
 	{
-		foreach ( $types as $type )
-		{
-			$this->floatTypes[] = $type;
-		}
+		array_push( $this->floatTypes, ...$types );
 	}
 
 	public function prepend( RepresentsFloat...$types ): void
 	{
-		$this->floatTypes = $types + $this->floatTypes;
+		array_unshift( $this->floatTypes, ...$types );
 	}
 
 	public function appendList( RepresentsFloatTypeList $list ): void
 	{
-		$this->floatTypes += $list->toNativeType();
+		array_push( $this->floatTypes, ...$list->toNativeType() );
 	}
 
 	public function prependList( RepresentsFloatTypeList $list ): void
 	{
-		$this->floatTypes = $list->toNativeType() + $this->floatTypes;
+		array_unshift( $this->floatTypes, ...$list->toNativeType() );
 	}
 
 	public function reverse(): void
@@ -62,11 +53,6 @@ trait RepresentingMutableFloatTypeList
 	public function shuffle(): void
 	{
 		shuffle( $this->floatTypes );
-	}
-
-	public function replace( int $index, RepresentsFloat $type ): void
-	{
-		$this->floatTypes[ $index ] = $type;
 	}
 
 	public function unique(): void
@@ -83,27 +69,5 @@ trait RepresentingMutableFloatTypeList
 				return $comparer->compare( $firstType, $secondType );
 			}
 		);
-	}
-
-	private function exists( int $index ): bool
-	{
-		return isset( $this->floatTypes[ $index ] );
-	}
-
-	private function get( int $index ): RepresentsFloat
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->floatTypes[ $index ];
-	}
-
-	private function set( int $index, RepresentsFloat $value ): void
-	{
-		$this->floatTypes[ $index ] = $value;
-	}
-
-	private function remove( int $index ): void
-	{
-		unset( $this->floatTypes[ $index ] );
 	}
 }

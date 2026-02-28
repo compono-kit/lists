@@ -13,12 +13,11 @@ abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
 {
 	use RepresentingMixedTypeList;
 
-	/**
-	 * @param RepresentsType[] $mixedTypes
-	 */
-	public function __construct( private array $mixedTypes = [] )
+	public function __construct( RepresentsType ...$mixedTypes )
 	{
 		$this->validate( $mixedTypes );
+
+		$this->mixedTypes = $mixedTypes;
 	}
 
 	abstract protected static function isValueValid( RepresentsType $type ): bool;
@@ -28,7 +27,7 @@ abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
 	 */
 	public static function fromJson( string $json ): static
 	{
-		return new static( json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
 	public function exists( int $index ): bool
@@ -43,56 +42,49 @@ abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
 		return $this->mixedTypes[ $index ];
 	}
 
-	public function set( int $index, RepresentsType $value ): static
-	{
-		$mixedTypes           = $this->mixedTypes;
-		$mixedTypes[ $index ] = $value;
-
-		return new static( $mixedTypes );
-	}
-
 	public function remove( int $index ): static
 	{
 		$this->guardIndexExists( $index );
 
-		$values = $this->mixedTypes;
-		unset( $values[ $index ] );
+		$types = $this->mixedTypes;
+		array_splice( $types, $index, 1 );
 
-		return new static( $values );
+		return new static( ...$types );
+	}
+
+	public function replace( int $index, RepresentsType $type ): static
+	{
+		$this->guardIndexExists( $index );
+
+		$types           = $this->mixedTypes;
+		$types[ $index ] = $type;
+
+		return new static( ...$types );
 	}
 
 	public function append( int|float|string|bool|array...$types ): static
 	{
-		$currentTypes = $this->mixedTypes;
-		foreach ( $types as $type )
-		{
-			$currentTypes[] = $type;
-		}
-
-		return new static( $currentTypes );
+		return new static( ...$this->mixedTypes, ...$types );
 	}
 
 	public function prepend( int|float|string|bool|array...$types ): static
 	{
-		$currentTypes = $this->mixedTypes;
-		$currentTypes = $types + $currentTypes;
-
-		return new static( $currentTypes );
+		return new static( ...$types, ...$this->mixedTypes );
 	}
 
 	public function appendList( RepresentsMixedTypeList $list ): static
 	{
-		return new static( $this->toNativeType() + $list->toNativeType() );
+		return new static( ...$this->toNativeType(), ...$list->toNativeType() );
 	}
 
 	public function prependList( RepresentsMixedTypeList $list ): static
 	{
-		return new static( $list->toNativeType() + $this->toNativeType() );
+		return new static( ...$list->toNativeType(), ...$this->toNativeType() );
 	}
 
 	public function reverse(): static
 	{
-		return new static( array_reverse( $this->mixedTypes ) );
+		return new static( ...array_reverse( $this->mixedTypes ) );
 	}
 
 	public function shuffle(): static
@@ -100,15 +92,7 @@ abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
 		$types = $this->mixedTypes;
 		shuffle( $types );
 
-		return new static( $types );
-	}
-
-	public function replace( int $index, RepresentsType $type ): static
-	{
-		$types           = $this->mixedTypes;
-		$types[ $index ] = $type;
-
-		return new static( $types );
+		return new static( ...$types );
 	}
 
 	public function unique(): static
@@ -119,7 +103,7 @@ abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
 		{
 			if ( !$this->existsIn( $type, $uniqueTypes ) )
 			{
-				$uniqueTypes->append( $type );
+				$uniqueTypes = $uniqueTypes->append( $type );
 			}
 		}
 
@@ -137,64 +121,53 @@ abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
 			}
 		);
 
-		return new static( $types );
+		return new static( ...$types );
 	}
 
 	public function diff( RepresentsMixedTypeList $list ): RepresentsMixedTypeList
 	{
 		return new static(
-			array_udiff(
+			...array_udiff(
 				$this->mixedTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsType $firstType, RepresentsType $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	public function intersect( RepresentsMixedTypeList $list ): RepresentsMixedTypeList
 	{
 		return new static(
-			array_uintersect(
+			...array_uintersect(
 				$this->mixedTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsType $firstType, RepresentsType $secondType ): int
 				{
-					return $firstType->equals( $secondType ) ? 1 : 0;
+					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	/**
-	 * @param int  $count
-	 * @param bool $preserveIndices
+	 * @param int $count
 	 *
 	 * @return \Iterator<int, RepresentsMixedTypeList>
 	 */
-	public function split( int $count, bool $preserveIndices = false ): \Iterator
+	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->mixedTypes, $count, $preserveIndices ) as $types )
+		foreach ( array_chunk( $this->mixedTypes, $count ) as $types )
 		{
-			yield new static( $types );
+			yield new static( ...$types );
 		}
 	}
 
-	/**
-	 * @param int      $index
-	 * @param int|null $count
-	 * @param bool     $preserveIndices
-	 *
-	 * @return \Iterator<int, RepresentsMixedTypeList>
-	 */
-	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
+	public function slice( int $index, ?int $count = null ): static
 	{
-		foreach ( array_slice( $this->mixedTypes, $index, $count, $preserveIndices ) as $types )
-		{
-			yield new static( $types );
-		}
+		return new static( ...array_slice( $this->mixedTypes, $index, $count ) );
 	}
 
 	protected function validate( array $types ): void

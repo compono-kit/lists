@@ -10,11 +10,24 @@ use ComponoKit\Types\Lists\Interfaces\RepresentsFloatTypeList;
 
 trait RepresentingFloatTypeList
 {
-	/**
-	 * @param RepresentsFloat[] $floatTypes
-	 */
-	public function __construct( private array $floatTypes = [] )
+	/** @var RepresentsFloat[]  */
+	private array $floatTypes;
+
+	public function __construct( RepresentsFloat ...$floatTypes )
 	{
+		$this->floatTypes = $floatTypes;
+	}
+
+	public function exists( int $index ): bool
+	{
+		return isset( $this->floatTypes[ $index ] );
+	}
+
+	public function get( int $index ): RepresentsFloat
+	{
+		$this->guardIndexExists( $index );
+
+		return $this->floatTypes[ $index ];
 	}
 
 	public function equals( RepresentsType $type ): bool

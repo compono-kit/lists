@@ -11,47 +11,38 @@ trait RepresentingMutableMixedTypeList
 {
 	use RepresentingMixedTypeList;
 
-	public function offsetExists( $offset ): bool
+	public function remove( int $index ): void
 	{
-		return $this->exists( $offset );
+		$this->guardIndexExists( $index );
+
+		array_splice( $this->mixedTypes, $index, 1 );
 	}
 
-	public function offsetGet( $offset ): RepresentsType
+	public function replace( int $index, RepresentsType $type ): void
 	{
-		return $this->get( $offset );
-	}
+		$this->guardIndexExists( $index );
 
-	public function offsetSet( $offset, $value ): void
-	{
-		$this->set( $offset, $value );
-	}
-
-	public function offsetUnset( $offset ): void
-	{
-		$this->remove( $offset );
+		$this->mixedTypes[ $index ] = $type;
 	}
 
 	public function append( RepresentsType...$types ): void
 	{
-		foreach ( $types as $type )
-		{
-			$this->mixedTypes[] = $type;
-		}
+		array_push( $this->mixedTypes, ...$types );
 	}
 
 	public function prepend( RepresentsType...$types ): void
 	{
-		$this->mixedTypes = $types + $this->mixedTypes;
+		array_unshift( $this->mixedTypes, ...$types );
 	}
 
 	public function appendList( RepresentsMixedTypeList $list ): void
 	{
-		$this->mixedTypes += $list->toNativeType();
+		array_push( $this->mixedTypes, ...$list->toNativeType() );
 	}
 
 	public function prependList( RepresentsMixedTypeList $list ): void
 	{
-		$this->mixedTypes = $list->toNativeType() + $this->mixedTypes;
+		array_unshift( $this->mixedTypes, ...$list->toNativeType() );
 	}
 
 	public function reverse(): void
@@ -62,11 +53,6 @@ trait RepresentingMutableMixedTypeList
 	public function shuffle(): void
 	{
 		shuffle( $this->mixedTypes );
-	}
-
-	public function replace( int $index, RepresentsType $type ): void
-	{
-		$this->mixedTypes[ $index ] = $type;
 	}
 
 	public function unique(): void
@@ -83,27 +69,5 @@ trait RepresentingMutableMixedTypeList
 				return $comparer->compare( $firstType, $secondType );
 			}
 		);
-	}
-
-	private function exists( int $index ): bool
-	{
-		return isset( $this->mixedTypes[ $index ] );
-	}
-
-	private function get( int $index ): RepresentsType
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->mixedTypes[ $index ];
-	}
-
-	private function set( int $index, RepresentsType $value ): void
-	{
-		$this->mixedTypes[ $index ] = $value;
-	}
-
-	private function remove( int $index ): void
-	{
-		unset( $this->mixedTypes[ $index ] );
 	}
 }

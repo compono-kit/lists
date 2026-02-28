@@ -11,12 +11,11 @@ abstract class AbstractStringValueList implements RepresentsMutableStringValueLi
 {
 	use RepresentingMutableStringValueList;
 
-	/**
-	 * @param string[] $strings
-	 */
-	public function __construct( private array $strings = [] )
+	public function __construct( string ...$strings )
 	{
 		$this->validate( $strings );
+
+		$this->strings = $strings;
 	}
 
 	abstract protected static function isValueValid( string $value ): bool;
@@ -26,64 +25,53 @@ abstract class AbstractStringValueList implements RepresentsMutableStringValueLi
 	 */
 	public static function fromJson( string $json ): static
 	{
-		return new static( json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
 	public function diff( RepresentsStringValueList $list ): RepresentsStringValueList
 	{
 		return new static(
-			array_udiff(
+			...array_udiff(
 				$this->strings,
 				$list,
 				function ( string $firstValue, string $secondValue ): int
 				{
 					return $firstValue === $secondValue ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	public function intersect( RepresentsStringValueList $list ): RepresentsStringValueList
 	{
 		return new static(
-			array_uintersect(
+			...array_uintersect(
 				$this->strings,
 				$list,
 				function ( string $firstValue, string $secondValue ): int
 				{
 					return $firstValue === $secondValue ? 1 : 0;
 				}
-			),
+			)
 		);
 	}
 
 	/**
-	 * @param int  $count
-	 * @param bool $preserveIndices
+	 * @param int $count
 	 *
 	 * @return \Iterator<int, RepresentsStringValueList>
 	 */
-	public function split( int $count, bool $preserveIndices = false ): \Iterator
+	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->strings, $count, $preserveIndices ) as $types )
+		foreach ( array_chunk( $this->strings, $count ) as $types )
 		{
-			yield new static( $types );
+			yield new static( ...$types );
 		}
 	}
 
-	/**
-	 * @param int      $index
-	 * @param int|null $count
-	 * @param bool     $preserveIndices
-	 *
-	 * @return \Iterator<int, RepresentsStringValueList>
-	 */
-	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
+	public function slice( int $index, ?int $count = null ): void
 	{
-		foreach ( array_slice( $this->strings, $index, $count, $preserveIndices ) as $values )
-		{
-			yield new static( $values );
-		}
+		$this->strings = array_slice( $this->strings, $index, $count );
 	}
 
 	protected function validate( array $values ): void

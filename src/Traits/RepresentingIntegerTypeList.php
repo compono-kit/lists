@@ -10,11 +10,24 @@ use ComponoKit\Types\Lists\Interfaces\RepresentsIntegerTypeList;
 
 trait RepresentingIntegerTypeList
 {
-	/**
-	 * @param RepresentsInteger[] $integerTypes
-	 */
-	public function __construct( private array $integerTypes = [] )
+	/** @var RepresentsInteger[] */
+	private array $integerTypes;
+
+	public function __construct( RepresentsInteger ...$integerTypes )
 	{
+		$this->integerTypes = $integerTypes;
+	}
+
+	public function exists( int $index ): bool
+	{
+		return isset( $this->integerTypes[ $index ] );
+	}
+
+	public function get( int $index ): RepresentsInteger
+	{
+		$this->guardIndexExists( $index );
+
+		return $this->integerTypes[ $index ];
 	}
 
 	public function equals( RepresentsType $type ): bool

@@ -11,12 +11,11 @@ abstract class AbstractIntegerValueList implements RepresentsMutableIntegerValue
 {
 	use RepresentingMutableIntegerValueList;
 
-	/**
-	 * @param int[] $integers
-	 */
-	public function __construct( private array $integers = [] )
+	public function __construct( int ...$integers )
 	{
 		$this->validate( $integers );
+
+		$this->integers = $integers;
 	}
 
 	abstract protected static function isValueValid( int $value ): bool;
@@ -26,64 +25,53 @@ abstract class AbstractIntegerValueList implements RepresentsMutableIntegerValue
 	 */
 	public static function fromJson( string $json ): static
 	{
-		return new static( json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
 	public function diff( RepresentsIntegerValueList $list ): RepresentsIntegerValueList
 	{
 		return new static(
-			array_udiff(
+			...array_udiff(
 				$this->integers,
 				$list,
 				function ( int $firstValue, int $secondValue ): int
 				{
 					return $firstValue === $secondValue ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	public function intersect( RepresentsIntegerValueList $list ): RepresentsIntegerValueList
 	{
 		return new static(
-			array_uintersect(
+			...array_uintersect(
 				$this->integers,
 				$list,
 				function ( int $firstValue, int $secondValue ): int
 				{
 					return $firstValue === $secondValue ? 1 : 0;
 				}
-			),
+			)
 		);
 	}
 
 	/**
 	 * @param int  $count
-	 * @param bool $preserveIndices
 	 *
 	 * @return \Iterator<int, RepresentsIntegerValueList>
 	 */
-	public function split( int $count, bool $preserveIndices = false ): \Iterator
+	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->integers, $count, $preserveIndices ) as $types )
+		foreach ( array_chunk( $this->integers, $count ) as $types )
 		{
-			yield new static( $types );
+			yield new static( ...$types );
 		}
 	}
 
-	/**
-	 * @param int      $index
-	 * @param int|null $count
-	 * @param bool     $preserveIndices
-	 *
-	 * @return \Iterator<int, RepresentsIntegerValueList>
-	 */
-	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
+	public function slice( int $index, ?int $count = null ): void
 	{
-		foreach ( array_slice( $this->integers, $index, $count, $preserveIndices ) as $values )
-		{
-			yield new static( $values );
-		}
+		$this->integers = array_slice( $this->integers, $index, $count );
 	}
 
 	protected function validate( array $values ): void

@@ -11,47 +11,38 @@ trait RepresentingMutableBooleanTypeList
 {
 	use RepresentingBooleanTypeList;
 
-	public function offsetExists( $offset ): bool
+	public function remove( int $index ): void
 	{
-		return $this->exists( $offset );
+		$this->guardIndexExists( $index );
+
+		array_splice( $this->booleanTypes, $index, 1 );
 	}
 
-	public function offsetGet( $offset ): RepresentsBoolean
+	public function replace( int $index, RepresentsBoolean $type ): void
 	{
-		return $this->get( $offset );
-	}
+		$this->guardIndexExists( $index );
 
-	public function offsetSet( $offset, $value ): void
-	{
-		$this->set( $offset, $value );
-	}
-
-	public function offsetUnset( $offset ): void
-	{
-		$this->remove( $offset );
+		$this->booleanTypes[ $index ] = $type;
 	}
 
 	public function append( RepresentsBoolean...$types ): void
 	{
-		foreach ( $types as $type )
-		{
-			$this->booleanTypes[] = $type;
-		}
+		array_push( $this->booleanTypes, ...$types );
 	}
 
 	public function prepend( RepresentsBoolean...$types ): void
 	{
-		$this->booleanTypes = $types + $this->booleanTypes;
+		array_unshift( $this->booleanTypes, ...$types );
 	}
 
 	public function appendList( RepresentsBooleanTypeList $list ): void
 	{
-		$this->booleanTypes += $list->toNativeType();
+		array_push( $this->booleanTypes, ...$list->toNativeType() );
 	}
 
 	public function prependList( RepresentsBooleanTypeList $list ): void
 	{
-		$this->booleanTypes = $list->toNativeType() + $this->booleanTypes;
+		array_unshift( $this->booleanTypes, ...$list->toNativeType() );
 	}
 
 	public function reverse(): void
@@ -62,11 +53,6 @@ trait RepresentingMutableBooleanTypeList
 	public function shuffle(): void
 	{
 		shuffle( $this->booleanTypes );
-	}
-
-	public function replace( int $index, RepresentsBoolean $type ): void
-	{
-		$this->booleanTypes[ $index ] = $type;
 	}
 
 	public function unique(): void
@@ -83,27 +69,5 @@ trait RepresentingMutableBooleanTypeList
 				return $comparer->compare( $firstType, $secondType );
 			}
 		);
-	}
-
-	private function exists( int $index ): bool
-	{
-		return isset( $this->booleanTypes[ $index ] );
-	}
-
-	private function get( int $index ): RepresentsBoolean
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->booleanTypes[ $index ];
-	}
-
-	private function set( int $index, RepresentsBoolean $value ): void
-	{
-		$this->booleanTypes[ $index ] = $value;
-	}
-
-	private function remove( int $index ): void
-	{
-		unset( $this->booleanTypes[ $index ] );
 	}
 }

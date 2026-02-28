@@ -14,12 +14,11 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 {
 	use RepresentingImmutableFloatValueList;
 
-	/**
-	 * @param float[] $floats
-	 */
-	public function __construct( private array $floats = [] )
+	public function __construct( float ...$floats )
 	{
 		$this->validate( $floats );
+
+		$this->floats = $floats;
 	}
 
 	abstract protected static function isValueValid( float $value ): bool;
@@ -29,7 +28,7 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 	 */
 	public static function fromJson( string $json ): static
 	{
-		return new static( json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
 	public function exists( int $index ): bool
@@ -44,56 +43,49 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 		return $this->floats[ $index ];
 	}
 
-	public function set( int $index, float $value ): static
-	{
-		$floats           = $this->floats;
-		$floats[ $index ] = $value;
-
-		return new static( $floats );
-	}
-
 	public function remove( int $index ): static
 	{
 		$this->guardIndexExists( $index );
 
 		$values = $this->floats;
-		unset( $values[ $index ] );
+		array_splice( $values, $index, 1 );
 
-		return new static( $values );
+		return new static( ...$values );
 	}
 
-	public function append( float...$types ): static
+	public function replace( int $index, float $value ): static
 	{
-		$currentTypes = $this->floats;
-		foreach ( $types as $type )
-		{
-			$currentTypes[] = $type;
-		}
+		$this->guardIndexExists( $index );
 
-		return new static( $currentTypes );
+		$values           = $this->floats;
+		$values[ $index ] = $value;
+
+		return new static( ...$values );
 	}
 
-	public function prepend( float...$types ): static
+	public function append( float...$values ): static
 	{
-		$currentTypes = $this->floats;
-		$currentTypes = $types + $currentTypes;
+		return new static( ...$this->floats, ...$values );
+	}
 
-		return new static( $currentTypes );
+	public function prepend( float...$values ): static
+	{
+		return new static( ...$values, ...$this->floats );
 	}
 
 	public function appendList( RepresentsFloatValueList|RepresentsFloatTypeList $list ): static
 	{
-		return new static( $this->toNativeType() + $list->toNativeType() );
+		return new static( ...$this->toNativeType(), ...$list->toNativeType() );
 	}
 
 	public function prependList( RepresentsFloatValueList|RepresentsFloatTypeList $list ): static
 	{
-		return new static( $list->toNativeType() + $this->toNativeType() );
+		return new static( ...$list->toNativeType(), ...$this->toNativeType() );
 	}
 
 	public function reverse(): static
 	{
-		return new static( array_reverse( $this->floats ) );
+		return new static( ...array_reverse( $this->floats ) );
 	}
 
 	public function shuffle(): static
@@ -101,15 +93,7 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 		$values = $this->floats;
 		shuffle( $values );
 
-		return new static( $values );
-	}
-
-	public function replace( int $index, float $value ): static
-	{
-		$values           = $this->floats;
-		$values[ $index ] = $value;
-
-		return new static( $values );
+		return new static( ...$values );
 	}
 
 	public function unique(): static
@@ -120,7 +104,7 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 		{
 			if ( !$this->existsIn( $value, $uniqueValues ) )
 			{
-				$uniqueValues->append( $value );
+				$uniqueValues = $uniqueValues->append( $value );
 			}
 		}
 
@@ -129,80 +113,69 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 
 	public function sort( ComparesValues $comparer ): static
 	{
-		$types = $this->floats;
+		$values = $this->floats;
 		usort(
-			$types,
+			$values,
 			function ( float $firstValue, float $secondValue ) use ( $comparer ): int
 			{
 				return $comparer->compare( $firstValue, $secondValue );
 			}
 		);
 
-		return new static( $types );
+		return new static( ...$values );
 	}
 
 	public function diff( RepresentsFloatValueList $list ): RepresentsFloatValueList
 	{
 		return new static(
-			array_udiff(
+			...array_udiff(
 				$this->floats,
-				$list,
+				$list->toNativeType(),
 				function ( float $firstType, float $secondType ): int
 				{
 					return $firstType === $secondType ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	public function intersect( RepresentsFloatValueList $list ): RepresentsFloatValueList
 	{
 		return new static(
-			array_uintersect(
+			...array_uintersect(
 				$this->floats,
-				$list,
+				$list->toNativeType(),
 				function ( float $firstType, float $secondType ): int
 				{
-					return $firstType === $secondType ? 1 : 0;
+					return $firstType === $secondType ? 0 : 1;
 				}
-			),
+			)
 		);
 	}
 
 	/**
-	 * @param int  $count
-	 * @param bool $preserveIndices
+	 * @param int $count
 	 *
 	 * @return \Iterator<int, RepresentsFloatValueList>
 	 */
-	public function split( int $count, bool $preserveIndices = false ): \Iterator
+	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->floats, $count, $preserveIndices ) as $types )
+		foreach ( array_chunk( $this->floats, $count ) as $values )
 		{
-			yield new static( $types );
+			yield new static( ...$values );
 		}
 	}
 
-	/**
-	 * @param int      $index
-	 * @param int|null $count
-	 * @param bool     $preserveIndices
-	 *
-	 * @return \Iterator<int, RepresentsFloatValueList>
-	 */
-	public function slice( int $index, ?int $count = null, bool $preserveIndices = false ): \Iterator
+	public function slice( int $index, ?int $count = null ): static
 	{
-		foreach ( array_slice( $this->floats, $index, $count, $preserveIndices ) as $values )
-		{
-			yield new static( $values );
-		}
+		return new static( ...array_slice( $this->floats, $index, $count ) );
 	}
 
 	private function existsIn( float $valueToCheck, RepresentsList $list ): bool
 	{
-		foreach ( $list as $type )
+		foreach ( $list as $value )
 		{
-			if ( $type->equals( $valueToCheck ) )
+			if ( $value->equals( $valueToCheck ) )
 			{
 				return true;
 			}

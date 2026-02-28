@@ -4,6 +4,7 @@ ARG GITHUB_TOKEN
 
 RUN apk add --no-cache nano icu-dev linux-headers $PHPIZE_DEPS
 RUN pecl install xdebug-${XDEBUG_VERSION}
+RUN docker-php-ext-install intl
 RUN docker-php-ext-enable xdebug
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

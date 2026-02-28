@@ -9,11 +9,24 @@ use ComponoKit\Types\Lists\Interfaces\RepresentsMixedValueList;
 
 trait RepresentingMixedValueList
 {
-	/**
-	 * @param array<int, int|float|string|bool|array> $mixedValues
-	 */
-	public function __construct( private array $mixedValues = [] )
+	/** @var array<int, int|float|string|bool|array> */
+	private array $mixedValues;
+
+	public function __construct( int|float|string|bool|array ...$mixedValues )
 	{
+		$this->mixedValues = $mixedValues;
+	}
+
+	public function exists( int $index ): bool
+	{
+		return isset( $this->mixedValues[ $index ] );
+	}
+
+	public function get( int $index ): int|float|string|bool|array
+	{
+		$this->guardIndexExists( $index );
+
+		return $this->mixedValues[ $index ];
 	}
 
 	public function equals( RepresentsType $type ): bool

@@ -11,47 +11,38 @@ trait RepresentingMutableFloatValueList
 {
 	use RepresentingFloatValueList;
 
-	public function offsetExists( $offset ): bool
+	public function remove( int $index ): void
 	{
-		return $this->exists( $offset );
+		$this->guardIndexExists( $index );
+
+		array_splice( $this->floats, $index, 1 );
 	}
 
-	public function offsetGet( $offset ): float
+	public function replace( int $index, float $value ): void
 	{
-		return $this->get( $offset );
-	}
+		$this->guardIndexExists( $index );
 
-	public function offsetSet( $offset, $value ): void
-	{
-		$this->set( $offset, $value );
-	}
-
-	public function offsetUnset( $offset ): void
-	{
-		$this->remove( $offset );
+		$this->floats[ $index ] = $value;
 	}
 
 	public function append( float...$values ): void
 	{
-		foreach ( $values as $value )
-		{
-			$this->floats[] = $value;
-		}
+		array_push( $this->floats, ...$values );
 	}
 
 	public function prepend( float...$values ): void
 	{
-		$this->floats = $values + $this->floats;
+		array_unshift( $this->floats, ...$values );
 	}
 
 	public function appendList( RepresentsFloatValueList|RepresentsFloatTypeList $list ): void
 	{
-		$this->floats += $list instanceof RepresentsFloatTypeList ? $list->toFloats() : $list->toNativeType();
+		array_push( $this->floats, ...($list instanceof RepresentsFloatTypeList ? $list->toFloats() : $list->toNativeType()) );
 	}
 
 	public function prependList( RepresentsFloatValueList|RepresentsFloatTypeList $list ): void
 	{
-		$this->floats = ($list instanceof RepresentsFloatTypeList ? $list->toFloats() : $list->toNativeType()) + $this->floats;
+		array_unshift( $this->floats, ...($list instanceof RepresentsFloatTypeList ? $list->toFloats() : $list->toNativeType()) );
 	}
 
 	public function reverse(): void
@@ -62,11 +53,6 @@ trait RepresentingMutableFloatValueList
 	public function shuffle(): void
 	{
 		shuffle( $this->floats );
-	}
-
-	public function replace( int $index, float $value ): void
-	{
-		$this->floats[ $index ] = $value;
 	}
 
 	public function unique(): void
@@ -83,27 +69,5 @@ trait RepresentingMutableFloatValueList
 				return $comparer->compare( $firstValue, $secondValue );
 			}
 		);
-	}
-
-	private function exists( int $index ): bool
-	{
-		return isset( $this->floats[ $index ] );
-	}
-
-	private function get( int $index ): float
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->floats[ $index ];
-	}
-
-	private function set( int $index, float $value ): void
-	{
-		$this->floats[ $index ] = $value;
-	}
-
-	private function remove( int $index ): void
-	{
-		unset( $this->floats[ $index ] );
 	}
 }

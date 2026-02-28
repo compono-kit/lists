@@ -11,47 +11,38 @@ trait RepresentingMutableIntegerTypeList
 {
 	use RepresentingIntegerTypeList;
 
-	public function offsetExists( $offset ): bool
+	public function remove( int $index ): void
 	{
-		return $this->exists( $offset );
+		$this->guardIndexExists( $index );
+
+		array_splice( $this->integerTypes, $index, 1 );
 	}
 
-	public function offsetGet( $offset ): RepresentsInteger
+	public function replace( int $index, RepresentsInteger $type ): void
 	{
-		return $this->get( $offset );
-	}
+		$this->guardIndexExists( $index );
 
-	public function offsetSet( $offset, $value ): void
-	{
-		$this->set( $offset, $value );
-	}
-
-	public function offsetUnset( $offset ): void
-	{
-		$this->remove( $offset );
+		$this->integerTypes[ $index ] = $type;
 	}
 
 	public function append( RepresentsInteger...$types ): void
 	{
-		foreach ( $types as $type )
-		{
-			$this->integerTypes[] = $type;
-		}
+		array_push( $this->integerTypes, ...$types );
 	}
 
 	public function prepend( RepresentsInteger...$types ): void
 	{
-		$this->integerTypes = $types + $this->integerTypes;
+		array_unshift( $this->integerTypes, ...$types );
 	}
 
 	public function appendList( RepresentsIntegerTypeList $list ): void
 	{
-		$this->integerTypes += $list->toNativeType();
+		array_push( $this->integerTypes, ...$list->toNativeType() );
 	}
 
 	public function prependList( RepresentsIntegerTypeList $list ): void
 	{
-		$this->integerTypes = $list->toNativeType() + $this->integerTypes;
+		array_unshift( $this->integerTypes, ...$list->toNativeType() );
 	}
 
 	public function reverse(): void
@@ -62,11 +53,6 @@ trait RepresentingMutableIntegerTypeList
 	public function shuffle(): void
 	{
 		shuffle( $this->integerTypes );
-	}
-
-	public function replace( int $index, RepresentsInteger $type ): void
-	{
-		$this->integerTypes[ $index ] = $type;
 	}
 
 	public function unique(): void
@@ -83,27 +69,5 @@ trait RepresentingMutableIntegerTypeList
 				return $comparer->compare( $firstType, $secondType );
 			}
 		);
-	}
-
-	private function exists( int $index ): bool
-	{
-		return isset( $this->integerTypes[ $index ] );
-	}
-
-	private function get( int $index ): RepresentsInteger
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->integerTypes[ $index ];
-	}
-
-	private function set( int $index, RepresentsInteger $value ): void
-	{
-		$this->integerTypes[ $index ] = $value;
-	}
-
-	private function remove( int $index ): void
-	{
-		unset( $this->integerTypes[ $index ] );
 	}
 }

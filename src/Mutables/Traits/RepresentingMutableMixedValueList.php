@@ -11,47 +11,38 @@ trait RepresentingMutableMixedValueList
 {
 	use RepresentingMixedValueList;
 
-	public function offsetExists( $offset ): bool
+	public function remove( int $index ): void
 	{
-		return $this->exists( $offset );
+		$this->guardIndexExists( $index );
+
+		array_splice( $this->mixedValues, $index, 1 );
 	}
 
-	public function offsetGet( $offset ): int|float|string|bool|array
+	public function replace( int $index, int|float|string|bool|array $value ): void
 	{
-		return $this->get( $offset );
-	}
+		$this->guardIndexExists( $index );
 
-	public function offsetSet( $offset, $value ): void
-	{
-		$this->set( $offset, $value );
-	}
-
-	public function offsetUnset( $offset ): void
-	{
-		$this->remove( $offset );
+		$this->mixedValues[ $index ] = $value;
 	}
 
 	public function append( int|float|string|bool|array...$values ): void
 	{
-		foreach ( $values as $value )
-		{
-			$this->mixedValues[] = $value;
-		}
+		array_push( $this->mixedValues, ...$values );
 	}
 
 	public function prepend( int|float|string|bool|array...$values ): void
 	{
-		$this->mixedValues = $values + $this->mixedValues;
+		array_unshift( $this->mixedValues, ...$values );
 	}
 
 	public function appendList( RepresentsMixedValueList|RepresentsMixedTypeList $list ): void
 	{
-		$this->mixedValues += $list instanceof RepresentsMixedTypeList ? $list->toNativeTypes() : $list->toNativeType();
+		array_push( $this->mixedValues, ...($list instanceof RepresentsMixedTypeList ? $list->toNativeTypes() : $list->toNativeType()) );
 	}
 
 	public function prependList( RepresentsMixedValueList|RepresentsMixedTypeList $list ): void
 	{
-		$this->mixedValues = ($list instanceof RepresentsMixedTypeList ? $list->toNativeTypes() : $list->toNativeType()) + $this->mixedValues;
+		array_unshift( $this->mixedValues, ...($list instanceof RepresentsMixedTypeList ? $list->toNativeTypes() : $list->toNativeType()) );
 	}
 
 	public function reverse(): void
@@ -62,11 +53,6 @@ trait RepresentingMutableMixedValueList
 	public function shuffle(): void
 	{
 		shuffle( $this->mixedValues );
-	}
-
-	public function replace( int $index, int|float|string|bool|array $value ): void
-	{
-		$this->mixedValues[ $index ] = $value;
 	}
 
 	public function unique(): void
@@ -83,27 +69,5 @@ trait RepresentingMutableMixedValueList
 				return $comparer->compare( $firstValue, $secondValue );
 			}
 		);
-	}
-
-	private function exists( int $index ): bool
-	{
-		return isset( $this->mixedValues[ $index ] );
-	}
-
-	private function get( int $index ): int|float|string|bool|array
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->mixedValues[ $index ];
-	}
-
-	private function set( int $index, int|float|string|bool|array $value ): void
-	{
-		$this->mixedValues[ $index ] = $value;
-	}
-
-	private function remove( int $index ): void
-	{
-		unset( $this->mixedValues[ $index ] );
 	}
 }
