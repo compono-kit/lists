@@ -2,12 +2,14 @@
 
 namespace ComponoKit\Types\Lists\Immutables;
 
+use ComponoKit\Types\Interfaces\Factories\BuildsStringTypes;
 use ComponoKit\Types\Interfaces\RepresentsString;
 use ComponoKit\Types\Lists\Exceptions\InvalidStringTypeListException;
 use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableStringTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringTypeList;
+use ComponoKit\Types\Lists\Interfaces\RepresentsStringValueList;
 use ComponoKit\Types\Lists\Traits\RepresentingStringList;
 
 abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeList
@@ -23,24 +25,15 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 
 	abstract protected static function isValueValid( RepresentsString $type ): bool;
 
-	/**
-	 * @throws \JsonException
-	 */
-	public static function fromJson( string $json ): static
+	public static function fromValueList( RepresentsStringValueList $list, BuildsStringTypes $factory ): static
 	{
-		return new static( json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
-	}
+		$types = [];
+		foreach ( $list as $value )
+		{
+			$types[] = $factory->build( $value );
+		}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->stringTypes[ $index ] );
-	}
-
-	public function get( int $index ): RepresentsString
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->stringTypes[ $index ];
+		return new static( ...$types );
 	}
 
 	public function remove( int $index ): static
@@ -125,7 +118,7 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 		return new static( ...$types );
 	}
 
-	public function diff( RepresentsStringTypeList $list ): RepresentsStringTypeList
+	public function diff( RepresentsStringTypeList $list ): static
 	{
 		return new static(
 			...array_udiff(
@@ -139,7 +132,7 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 		);
 	}
 
-	public function intersect( RepresentsStringTypeList $list ): RepresentsStringTypeList
+	public function intersect( RepresentsStringTypeList $list ): static
 	{
 		return new static(
 			...array_uintersect(
@@ -156,7 +149,7 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 	/**
 	 * @param int $count
 	 *
-	 * @return \Iterator<int, RepresentsStringTypeList>
+	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
 	{

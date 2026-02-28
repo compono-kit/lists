@@ -17,6 +17,7 @@
 	"require-dev": {
 		"ext-intl": "*",
 		"phpunit/phpunit": "^9.0.0",
+		"compono-kit/types-interfaces": "dev-main",
 		"compono-kit/types": "dev-feature/8.0"
 	},
 	"repositories": {

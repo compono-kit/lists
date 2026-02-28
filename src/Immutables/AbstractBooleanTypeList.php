@@ -2,11 +2,13 @@
 
 namespace ComponoKit\Types\Lists\Immutables;
 
+use ComponoKit\Types\Interfaces\Factories\BuildsBooleanTypes;
 use ComponoKit\Types\Interfaces\RepresentsBoolean;
 use ComponoKit\Types\Lists\Exceptions\InvalidBooleanTypeListException;
 use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableBooleanTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanTypeList;
+use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanValueList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Traits\RepresentingBooleanTypeList;
 
@@ -23,24 +25,15 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 
 	abstract protected static function isValueValid( RepresentsBoolean $type ): bool;
 
-	/**
-	 * @throws \JsonException
-	 */
-	public static function fromJson( string $json ): static
+	public static function fromValueList( RepresentsBooleanValueList $list, BuildsBooleanTypes $factory ): static
 	{
-		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
-	}
+		$types = [];
+		foreach ( $list as $value )
+		{
+			$types[] = $factory->build( $value );
+		}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->booleanTypes[ $index ] );
-	}
-
-	public function get( int $index ): RepresentsBoolean
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->booleanTypes[ $index ];
+		return new static( ...$types );
 	}
 
 	public function remove( int $index ): static
@@ -125,7 +118,7 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 		return new static( ...$types );
 	}
 
-	public function diff( RepresentsBooleanTypeList $list ): RepresentsBooleanTypeList
+	public function diff( RepresentsBooleanTypeList $list ): static
 	{
 		return new static(
 			...array_udiff(
@@ -139,7 +132,7 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 		);
 	}
 
-	public function intersect( RepresentsBooleanTypeList $list ): RepresentsBooleanTypeList
+	public function intersect( RepresentsBooleanTypeList $list ): static
 	{
 		return new static(
 			...array_uintersect(
@@ -156,7 +149,7 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 	/**
 	 * @param int $count
 	 *
-	 * @return \Iterator<int, RepresentsBooleanTypeList>
+	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
 	{

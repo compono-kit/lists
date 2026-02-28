@@ -34,18 +34,6 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->booleans[ $index ] );
-	}
-
-	public function get( int $index ): bool
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->booleans[ $index ];
-	}
-
 	public function remove( int $index ): static
 	{
 		$this->guardIndexExists( $index );
@@ -128,7 +116,7 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 		return new static( ...$values );
 	}
 
-	public function diff( RepresentsBooleanValueList $list ): RepresentsBooleanValueList
+	public function diff( RepresentsBooleanValueList $list ): static
 	{
 		return new static(
 			...array_udiff(
@@ -142,7 +130,7 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 		);
 	}
 
-	public function intersect( RepresentsBooleanValueList $list ): RepresentsBooleanValueList
+	public function intersect( RepresentsBooleanValueList $list ): static
 	{
 		return new static(
 			...array_uintersect(
@@ -159,7 +147,7 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 	/**
 	 * @param int $count
 	 *
-	 * @return \Iterator<int, RepresentsBooleanValueList>
+	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
 	{

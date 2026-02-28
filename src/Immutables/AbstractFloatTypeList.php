@@ -2,11 +2,13 @@
 
 namespace ComponoKit\Types\Lists\Immutables;
 
+use ComponoKit\Types\Interfaces\Factories\BuildsFloatTypes;
 use ComponoKit\Types\Interfaces\RepresentsFloat;
 use ComponoKit\Types\Lists\Exceptions\InvalidFloatTypeListException;
 use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableFloatTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsFloatTypeList;
+use ComponoKit\Types\Lists\Interfaces\RepresentsFloatValueList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Traits\RepresentingFloatTypeList;
 
@@ -23,24 +25,15 @@ abstract class AbstractFloatTypeList implements RepresentsImmutableFloatTypeList
 
 	abstract protected static function isValueValid( RepresentsFloat $type ): bool;
 
-	/**
-	 * @throws \JsonException
-	 */
-	public static function fromJson( string $json ): static
+	public static function fromValueList( RepresentsFloatValueList $list, BuildsFloatTypes $factory ): static
 	{
-		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
-	}
+		$types = [];
+		foreach ( $list as $value )
+		{
+			$types[] = $factory->build( $value );
+		}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->floatTypes[ $index ] );
-	}
-
-	public function get( int $index ): RepresentsFloat
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->floatTypes[ $index ];
+		return new static( ...$types );
 	}
 
 	public function remove( int $index ): static
@@ -125,7 +118,7 @@ abstract class AbstractFloatTypeList implements RepresentsImmutableFloatTypeList
 		return new static( ...$types );
 	}
 
-	public function diff( RepresentsFloatTypeList $list ): RepresentsFloatTypeList
+	public function diff( RepresentsFloatTypeList $list ): static
 	{
 		return new static(
 			...array_udiff(
@@ -139,7 +132,7 @@ abstract class AbstractFloatTypeList implements RepresentsImmutableFloatTypeList
 		);
 	}
 
-	public function intersect( RepresentsFloatTypeList $list ): RepresentsFloatTypeList
+	public function intersect( RepresentsFloatTypeList $list ): static
 	{
 		return new static(
 			...array_uintersect(
@@ -154,9 +147,9 @@ abstract class AbstractFloatTypeList implements RepresentsImmutableFloatTypeList
 	}
 
 	/**
-	 * @param int  $count
+	 * @param int $count
 	 *
-	 * @return \Iterator<int, RepresentsFloatTypeList>
+	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
 	{

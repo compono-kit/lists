@@ -31,18 +31,6 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->floats[ $index ] );
-	}
-
-	public function get( int $index ): float
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->floats[ $index ];
-	}
-
 	public function remove( int $index ): static
 	{
 		$this->guardIndexExists( $index );
@@ -125,7 +113,7 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 		return new static( ...$values );
 	}
 
-	public function diff( RepresentsFloatValueList $list ): RepresentsFloatValueList
+	public function diff( RepresentsFloatValueList $list ): static
 	{
 		return new static(
 			...array_udiff(
@@ -139,7 +127,7 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 		);
 	}
 
-	public function intersect( RepresentsFloatValueList $list ): RepresentsFloatValueList
+	public function intersect( RepresentsFloatValueList $list ): static
 	{
 		return new static(
 			...array_uintersect(
@@ -156,7 +144,7 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 	/**
 	 * @param int $count
 	 *
-	 * @return \Iterator<int, RepresentsFloatValueList>
+	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
 	{

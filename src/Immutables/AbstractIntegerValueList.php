@@ -31,18 +31,6 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->integers[ $index ] );
-	}
-
-	public function get( int $index ): int
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->integers[ $index ];
-	}
-
 	public function remove( int $index ): static
 	{
 		$this->guardIndexExists( $index );
@@ -125,7 +113,7 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 		return new static( ...$values );
 	}
 
-	public function diff( RepresentsIntegerValueList $list ): RepresentsIntegerValueList
+	public function diff( RepresentsIntegerValueList $list ): static
 	{
 		return new static(
 			...array_udiff(
@@ -139,7 +127,7 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 		);
 	}
 
-	public function intersect( RepresentsIntegerValueList $list ): RepresentsIntegerValueList
+	public function intersect( RepresentsIntegerValueList $list ): static
 	{
 		return new static(
 			...array_uintersect(
@@ -156,7 +144,7 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 	/**
 	 * @param int $count
 	 *
-	 * @return \Iterator<int, RepresentsIntegerValueList>
+	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
 	{

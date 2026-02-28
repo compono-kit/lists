@@ -2,11 +2,13 @@
 
 namespace ComponoKit\Types\Lists\Immutables;
 
+use ComponoKit\Types\Interfaces\Factories\BuildsIntegerTypes;
 use ComponoKit\Types\Interfaces\RepresentsInteger;
 use ComponoKit\Types\Lists\Exceptions\InvalidIntegerTypeListException;
 use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableIntegerTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsIntegerTypeList;
+use ComponoKit\Types\Lists\Interfaces\RepresentsIntegerValueList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Traits\RepresentingIntegerTypeList;
 
@@ -23,24 +25,15 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 
 	abstract protected static function isValueValid( RepresentsInteger $type ): bool;
 
-	/**
-	 * @throws \JsonException
-	 */
-	public static function fromJson( string $json ): static
+	public static function fromValueList( RepresentsIntegerValueList $list, BuildsIntegerTypes $factory ): static
 	{
-		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
-	}
+		$types = [];
+		foreach ( $list as $value )
+		{
+			$types[] = $factory->build( $value );
+		}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->integerTypes[ $index ] );
-	}
-
-	public function get( int $index ): RepresentsInteger
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->integerTypes[ $index ];
+		return new static( ...$types );
 	}
 
 	public function remove( int $index ): static
@@ -125,7 +118,7 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 		return new static( ...$types );
 	}
 
-	public function diff( RepresentsIntegerTypeList $list ): RepresentsIntegerTypeList
+	public function diff( RepresentsIntegerTypeList $list ): static
 	{
 		return new static(
 			...array_udiff(
@@ -139,7 +132,7 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 		);
 	}
 
-	public function intersect( RepresentsIntegerTypeList $list ): RepresentsIntegerTypeList
+	public function intersect( RepresentsIntegerTypeList $list ): static
 	{
 		return new static(
 			...array_uintersect(
@@ -156,7 +149,7 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 	/**
 	 * @param int $count
 	 *
-	 * @return \Iterator<int, RepresentsIntegerTypeList>
+	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
 	{

@@ -2,11 +2,13 @@
 
 namespace ComponoKit\Types\Lists\Immutables;
 
+use ComponoKit\Types\Interfaces\Factories\BuildsTypes;
 use ComponoKit\Types\Interfaces\RepresentsType;
 use ComponoKit\Types\Lists\Exceptions\InvalidMixedTypeListException;
 use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
 use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedTypeList;
+use ComponoKit\Types\Lists\Interfaces\RepresentsMixedValueList;
 use ComponoKit\Types\Lists\Traits\RepresentingMixedTypeList;
 
 abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
@@ -22,24 +24,15 @@ abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
 
 	abstract protected static function isValueValid( RepresentsType $type ): bool;
 
-	/**
-	 * @throws \JsonException
-	 */
-	public static function fromJson( string $json ): static
+	public static function fromValueList( RepresentsMixedValueList $list, BuildsTypes $factory ): static
 	{
-		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
-	}
+		$types = [];
+		foreach ( $list as $value )
+		{
+			$types[] = $factory->build( $value );
+		}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->mixedTypes[ $index ] );
-	}
-
-	public function get( int $index ): RepresentsType
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->mixedTypes[ $index ];
+		return new static( ...$types );
 	}
 
 	public function remove( int $index ): static
@@ -124,7 +117,7 @@ abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
 		return new static( ...$types );
 	}
 
-	public function diff( RepresentsMixedTypeList $list ): RepresentsMixedTypeList
+	public function diff( RepresentsMixedTypeList $list ): static
 	{
 		return new static(
 			...array_udiff(
@@ -138,7 +131,7 @@ abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
 		);
 	}
 
-	public function intersect( RepresentsMixedTypeList $list ): RepresentsMixedTypeList
+	public function intersect( RepresentsMixedTypeList $list ): static
 	{
 		return new static(
 			...array_uintersect(
@@ -155,7 +148,7 @@ abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
 	/**
 	 * @param int $count
 	 *
-	 * @return \Iterator<int, RepresentsMixedTypeList>
+	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
 	{

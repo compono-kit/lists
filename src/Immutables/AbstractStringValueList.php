@@ -31,18 +31,6 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
-	public function exists( int $index ): bool
-	{
-		return isset( $this->strings[ $index ] );
-	}
-
-	public function get( int $index ): string
-	{
-		$this->guardIndexExists( $index );
-
-		return $this->strings[ $index ];
-	}
-
 	public function remove( int $index ): static
 	{
 		$this->guardIndexExists( $index );
@@ -125,7 +113,7 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 		return new static( ...$values );
 	}
 
-	public function diff( RepresentsStringValueList $list ): RepresentsStringValueList
+	public function diff( RepresentsStringValueList $list ): static
 	{
 		return new static(
 			...array_udiff(
@@ -139,7 +127,7 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 		);
 	}
 
-	public function intersect( RepresentsStringValueList $list ): RepresentsStringValueList
+	public function intersect( RepresentsStringValueList $list ): static
 	{
 		return new static(
 			...array_uintersect(
@@ -156,7 +144,7 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 	/**
 	 * @param int $count
 	 *
-	 * @return \Iterator<int, RepresentsStringValueList>
+	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
 	{
