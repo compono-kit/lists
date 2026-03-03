@@ -34,7 +34,7 @@ abstract class AbstractIntegerTypeList implements RepresentsMutableIntegerTypeLi
 		return new static(
 			...array_udiff(
 				$this->integerTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsInteger $firstType, RepresentsInteger $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 0 : 1;
@@ -48,10 +48,10 @@ abstract class AbstractIntegerTypeList implements RepresentsMutableIntegerTypeLi
 		return new static(
 			...array_uintersect(
 				$this->integerTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsInteger $firstType, RepresentsInteger $secondType ): int
 				{
-					return $firstType->equals( $secondType ) ? 1 : 0;
+					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
 			)
 		);

@@ -34,7 +34,7 @@ abstract class AbstractStringTypeList implements RepresentsMutableStringTypeList
 		return new static(
 			...array_udiff(
 				$this->stringTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsString $firstType, RepresentsString $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 0 : 1;
@@ -48,10 +48,10 @@ abstract class AbstractStringTypeList implements RepresentsMutableStringTypeList
 		return new static(
 			...array_uintersect(
 				$this->stringTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsString $firstType, RepresentsString $secondType ): int
 				{
-					return $firstType->equals( $secondType ) ? 1 : 0;
+					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
 			)
 		);

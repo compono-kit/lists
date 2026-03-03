@@ -33,7 +33,7 @@ abstract class AbstractMixedValueList implements RepresentsMutableMixedValueList
 		return new static(
 			...array_udiff(
 				$this->mixedValues,
-				$list,
+				$list->toNativeType(),
 				function ( int|float|string|bool|array $firstValue, int|float|string|bool|array $secondValue ): int
 				{
 					return $firstValue === $secondValue ? 0 : 1;
@@ -47,10 +47,10 @@ abstract class AbstractMixedValueList implements RepresentsMutableMixedValueList
 		return new static(
 			...array_uintersect(
 				$this->mixedValues,
-				$list,
+				$list->toNativeType(),
 				function ( int|float|string|bool|array $firstValue, int|float|string|bool|array $secondValue ): int
 				{
-					return $firstValue === $secondValue ? 1 : 0;
+					return $firstValue === $secondValue ? 0 : 1;
 				}
 			)
 		);

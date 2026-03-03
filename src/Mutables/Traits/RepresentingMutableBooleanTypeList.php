@@ -57,7 +57,21 @@ trait RepresentingMutableBooleanTypeList
 
 	public function unique(): void
 	{
-		$this->booleanTypes = array_unique( $this->booleanTypes );
+		$existingTypes = [];
+		$uniqueTypes   = [];
+
+		foreach ( $this->booleanTypes as $type )
+		{
+			$key = $type->toNativeType();
+
+			if ( !isset( $existingTypes[ $key ] ) )
+			{
+				$existingTypes[ $key ] = true;
+				$uniqueTypes[]         = $type;
+			}
+		}
+
+		$this->booleanTypes = $uniqueTypes;
 	}
 
 	public function sort( ComparesTypes $comparer ): void

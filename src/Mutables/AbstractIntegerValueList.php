@@ -33,7 +33,7 @@ abstract class AbstractIntegerValueList implements RepresentsMutableIntegerValue
 		return new static(
 			...array_udiff(
 				$this->integers,
-				$list,
+				$list->toNativeType(),
 				function ( int $firstValue, int $secondValue ): int
 				{
 					return $firstValue === $secondValue ? 0 : 1;
@@ -47,10 +47,10 @@ abstract class AbstractIntegerValueList implements RepresentsMutableIntegerValue
 		return new static(
 			...array_uintersect(
 				$this->integers,
-				$list,
+				$list->toNativeType(),
 				function ( int $firstValue, int $secondValue ): int
 				{
-					return $firstValue === $secondValue ? 1 : 0;
+					return $firstValue === $secondValue ? 0 : 1;
 				}
 			)
 		);

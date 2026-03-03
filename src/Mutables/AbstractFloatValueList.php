@@ -33,7 +33,7 @@ abstract class AbstractFloatValueList implements RepresentsMutableFloatValueList
 		return new static(
 			...array_udiff(
 				$this->floats,
-				$list,
+				$list->toNativeType(),
 				function ( float $firstValue, float $secondValue ): int
 				{
 					return $firstValue === $secondValue ? 0 : 1;
@@ -47,10 +47,10 @@ abstract class AbstractFloatValueList implements RepresentsMutableFloatValueList
 		return new static(
 			...array_uintersect(
 				$this->floats,
-				$list,
+				$list->toNativeType(),
 				function ( float $firstValue, float $secondValue ): int
 				{
-					return $firstValue === $secondValue ? 1 : 0;
+					return $firstValue === $secondValue ? 0 : 1;
 				}
 			)
 		);

@@ -34,7 +34,7 @@ abstract class AbstractFloatTypeList implements RepresentsMutableFloatTypeList
 		return new static(
 			...array_udiff(
 				$this->floatTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsFloat $firstType, RepresentsFloat $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 0 : 1;
@@ -48,10 +48,10 @@ abstract class AbstractFloatTypeList implements RepresentsMutableFloatTypeList
 		return new static(
 			...array_uintersect(
 				$this->floatTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsFloat $firstType, RepresentsFloat $secondType ): int
 				{
-					return $firstType->equals( $secondType ) ? 1 : 0;
+					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
 			)
 		);

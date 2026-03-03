@@ -34,7 +34,7 @@ abstract class AbstractMixedTypeList implements RepresentsMutableMixedTypeList
 		return new static(
 			...array_udiff(
 				$this->mixedTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsType $firstType, RepresentsType $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 0 : 1;
@@ -48,10 +48,10 @@ abstract class AbstractMixedTypeList implements RepresentsMutableMixedTypeList
 		return new static(
 			...array_uintersect(
 				$this->mixedTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsType $firstType, RepresentsType $secondType ): int
 				{
-					return $firstType->equals( $secondType ) ? 1 : 0;
+					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
 			)
 		);

@@ -33,7 +33,7 @@ abstract class AbstractStringValueList implements RepresentsMutableStringValueLi
 		return new static(
 			...array_udiff(
 				$this->strings,
-				$list,
+				$list->toNativeType(),
 				function ( string $firstValue, string $secondValue ): int
 				{
 					return $firstValue === $secondValue ? 0 : 1;
@@ -47,10 +47,10 @@ abstract class AbstractStringValueList implements RepresentsMutableStringValueLi
 		return new static(
 			...array_uintersect(
 				$this->strings,
-				$list,
+				$list->toNativeType(),
 				function ( string $firstValue, string $secondValue ): int
 				{
-					return $firstValue === $secondValue ? 1 : 0;
+					return $firstValue === $secondValue ? 0 : 1;
 				}
 			)
 		);

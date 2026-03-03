@@ -33,7 +33,7 @@ abstract class AbstractBooleanValueList implements RepresentsMutableBooleanValue
 		return new static(
 			...array_udiff(
 				$this->booleans,
-				$list,
+				$list->toNativeType(),
 				function ( bool $firstValue, bool $secondValue ): int
 				{
 					return $firstValue === $secondValue ? 0 : 1;
@@ -47,10 +47,10 @@ abstract class AbstractBooleanValueList implements RepresentsMutableBooleanValue
 		return new static(
 			...array_uintersect(
 				$this->booleans,
-				$list,
+				$list->toNativeType(),
 				function ( bool $firstValue, bool $secondValue ): int
 				{
-					return $firstValue === $secondValue ? 1 : 0;
+					return $firstValue === $secondValue ? 0 : 1;
 				}
 			)
 		);

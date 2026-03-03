@@ -57,7 +57,26 @@ trait RepresentingMutableMixedTypeList
 
 	public function unique(): void
 	{
-		$this->mixedTypes = array_unique( $this->mixedTypes );
+		$existingTypes = [];
+		$uniqueTypes   = [];
+
+		foreach ( $this->mixedTypes as $type )
+		{
+			$key = $type->toNativeType();
+
+			if ( is_array( $key ) )
+			{
+				$key = md5( serialize( $key ) );
+			}
+
+			if ( !isset( $existingTypes[ $key ] ) )
+			{
+				$existingTypes[ $key ] = true;
+				$uniqueTypes[]         = $type;
+			}
+		}
+
+		$this->mixedTypes = $uniqueTypes;
 	}
 
 	public function sort( ComparesTypes $comparer ): void

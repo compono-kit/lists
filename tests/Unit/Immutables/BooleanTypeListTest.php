@@ -4,50 +4,90 @@ namespace ComponoKit\Types\Lists\Tests\Unit\Immutables;
 
 use ComponoKit\Types\BooleanType;
 use ComponoKit\Types\Factories\BooleanFactory;
-use ComponoKit\Types\Interfaces\RepresentsBoolean;
 use ComponoKit\Types\Interfaces\RepresentsType;
+use ComponoKit\Types\Lists\Exceptions\InvalidBooleanTypeListException;
 use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Immutables\BooleanTypeList;
 use ComponoKit\Types\Lists\Immutables\BooleanValueList;
 use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
+use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableBooleanTypeList;
 use ComponoKit\Types\Lists\Interfaces\MatchesType;
+use ComponoKit\Types\Lists\Tests\Unit\Immutables\fakes\OnlyTrueBooleanTypeList;
 use PHPUnit\Framework\TestCase;
 
 class BooleanTypeListTest extends TestCase
 {
-	public static function equalsProvider(): iterable
+	public static function EqualsDataProvider(): \Iterator
 	{
-		$type1 = new BooleanType( true );
-		$type2 = new BooleanType( false );
-
 		yield 'same order' => [
-			[ $type1, $type2 ],
-			[ $type1, $type2 ],
+			new BooleanTypeList( new BooleanType( true ), new BooleanType( false ) ),
+			new BooleanTypeList( new BooleanType( true ), new BooleanType( false ) ),
 			true,
 		];
 
 		yield 'different order' => [
-			[ $type1, $type2 ],
-			[ $type2, $type1 ],
+			new BooleanTypeList( new BooleanType( true ), new BooleanType( false ) ),
+			new BooleanTypeList( new BooleanType( false ), new BooleanType( true ) ),
 			false,
 		];
 
 		yield 'different count' => [
-			[ $type1 ],
-			[ $type1, $type2 ],
+			new BooleanTypeList( new BooleanType( true ) ),
+			new BooleanTypeList( new BooleanType( true ), new BooleanType( false ) ),
+			false,
+		];
+
+		yield 'unequal types' => [
+			new BooleanTypeList( new BooleanType( true ) ),
+			new OnlyTrueBooleanTypeList( new BooleanType( true ), ),
 			false,
 		];
 	}
 
 	/**
-	 * @dataProvider equalsProvider
+	 * @dataProvider EqualsDataProvider
 	 */
-	public function testEquals( array $types1, array $types2, bool $expected ): void
+	public function testEquals( RepresentsImmutableBooleanTypeList $list1, RepresentsImmutableBooleanTypeList $list2, bool $expected ): void
 	{
-		$list1 = new BooleanTypeList( ...$types1 );
-		$list2 = new BooleanTypeList( ...$types2 );
-
 		self::assertSame( $expected, $list1->equals( $list2 ) );
+	}
+
+	public static function EqualsValuesDataProvider(): \Iterator
+	{
+		yield 'same values same order' => [
+			[ new BooleanType( true ), new BooleanType( false ) ],
+			[ new BooleanType( true ), new BooleanType( false ) ],
+			true,
+		];
+
+		yield 'same values different order' => [
+			[ new BooleanType( true ), new BooleanType( false ) ],
+			[ new BooleanType( false ), new BooleanType( true ) ],
+			false,
+		];
+
+		yield 'different values' => [
+			[ new BooleanType( true ) ],
+			[ new BooleanType( false ) ],
+			false,
+		];
+
+		yield 'different count' => [
+			[ new BooleanType( true ) ],
+			[ new BooleanType( true ), new BooleanType( true ), ],
+			false,
+		];
+	}
+
+	/**
+	 * @dataProvider EqualsValuesDataProvider
+	 */
+	public function testEqualsValues( array $values1, array $values2, bool $expected ): void
+	{
+		$list1 = new BooleanTypeList( ...$values1 );
+		$list2 = new BooleanTypeList( ...$values2 );
+
+		self::assertSame( $expected, $list1->equalsValues( $list2 ) );
 	}
 
 	public function testRemove(): void
@@ -176,16 +216,12 @@ class BooleanTypeListTest extends TestCase
 		self::assertSame( [ false, true ], $values );
 	}
 
-	/* ---------------------------------
-	 * sort
-	 * --------------------------------- */
-
 	public function testSort(): void
 	{
 		$type1 = new BooleanType( true );
 		$type2 = new BooleanType( false );
 
-		$list1 = new BooleanTypeList(  $type1, $type2  );
+		$list1 = new BooleanTypeList( $type1, $type2 );
 
 		$comparer = new class implements ComparesTypes {
 			public function compare( RepresentsType $firstType, RepresentsType $secondType ): int
@@ -199,39 +235,18 @@ class BooleanTypeListTest extends TestCase
 		self::assertSame( [ false, true ], $list2->toBooleans() );
 	}
 
-	/* ---------------------------------
-	 * reverse
-	 * --------------------------------- */
-
 	public function testReverse(): void
 	{
 		$type1 = new BooleanType( true );
 		$type2 = new BooleanType( false );
 
-		$list1 = new BooleanTypeList(  $type1, $type2  );
+		$list1 = new BooleanTypeList( $type1, $type2 );
 		$list2 = $list1->reverse();
 
 		self::assertSame( [ false, true ], $list2->toBooleans() );
 	}
 
-	/* ---------------------------------
-	 * replace
-	 * --------------------------------- */
-
-	/**
-	 * @dataProvider replaceProvider
-	 */
-	public function testReplace( array $values, int $index, bool $expected ): void
-	{
-		$list1 = new BooleanTypeList( ...$values );
-		$type1 = new BooleanType( $expected );
-
-		$list2 = $list1->replace( $index, $type1 );
-
-		self::assertSame( $expected, $list2->get( $index )->toBoolean() );
-	}
-
-	public static function replaceProvider(): iterable
+	public static function ReplaceDataProvider(): \Iterator
 	{
 		yield 'replace first' => [
 			[ new BooleanType( false ), new BooleanType( true ) ],
@@ -246,29 +261,28 @@ class BooleanTypeListTest extends TestCase
 		];
 	}
 
+	/**
+	 * @dataProvider ReplaceDataProvider
+	 */
+	public function testReplace( array $values, int $index, bool $expected ): void
+	{
+		$list1 = new BooleanTypeList( ...$values );
+		$type1 = new BooleanType( $expected );
+
+		$list2 = $list1->replace( $index, $type1 );
+
+		self::assertSame( $expected, $list2->get( $index )->toBoolean() );
+	}
+
 	public function testReplaceThrowsException(): void
 	{
 		$this->expectException( MissingIndexException::class );
 
-		$list1 = new BooleanTypeList(  new BooleanType( true ) );
+		$list1 = new BooleanTypeList( new BooleanType( true ) );
 		$list1->replace( 99, new BooleanType( false ) );
 	}
 
-	/* ---------------------------------
-	 * exists / get
-	 * --------------------------------- */
-
-	/**
-	 * @dataProvider existsProvider
-	 */
-	public function testExists( array $values, int $index, bool $expected ): void
-	{
-		$list1 = new BooleanTypeList( ...$values );
-
-		self::assertSame( $expected, $list1->exists( $index ) );
-	}
-
-	public static function existsProvider(): iterable
+	public static function ExistsDataProvider(): \Iterator
 	{
 		yield 'index exists' => [
 			[ new BooleanType( true ) ],
@@ -283,84 +297,93 @@ class BooleanTypeListTest extends TestCase
 		];
 	}
 
-	public function testGetThrowsException(): void
+	/**
+	 * @dataProvider ExistsDataProvider
+	 */
+	public function testExists( array $values, int $index, bool $expected ): void
+	{
+		$list1 = new BooleanTypeList( ...$values );
+
+		self::assertSame( $expected, $list1->exists( $index ) );
+	}
+
+	public function testGet(): void
 	{
 		$this->expectException( MissingIndexException::class );
 
-		$list1 = new BooleanTypeList(  new BooleanType( true )  );
+		$list1 = new BooleanTypeList(
+			new BooleanType( true ),
+			new BooleanType( false ),
+			new BooleanType( true ),
+			new BooleanType( false ),
+		);
+
+		self::assertEquals( false, $list1->get( 4 )->toBoolean() );
+	}
+
+	public function testGetThrowsExceptionIfIndexNotExists(): void
+	{
+		$this->expectException( MissingIndexException::class );
+
+		$list1 = new BooleanTypeList( new BooleanType( true ) );
 		$list1->get( 42 );
 	}
 
-	/* ---------------------------------
-	 * fromJson / toJson / jsonSerialize
-	 * --------------------------------- */
-
-	public function testFromJson(): void
+	public function testFromValueList(): void
 	{
 		$expectedList = new BooleanTypeList( new BooleanType( false ), new BooleanType( true ) );
 
-		$list1 = BooleanTypeList::fromValueList( new BooleanValueList(false, true), new BooleanFactory() );
+		$list1 = BooleanTypeList::fromValueList( new BooleanValueList( false, true ), new BooleanFactory() );
 
-		self::assertEquals( $expectedList, $list1);
+		self::assertEquals( $expectedList, $list1 );
 	}
 
-	/**
-	 * @dataProvider toJsonProvider
-	 */
-	public function testToJson( bool $pretty ): void
+	public function testToJson(): void
 	{
-		$list1 = new BooleanTypeList( 			new BooleanType( true ),			new BooleanType( false )		);
+		$list1 = new BooleanTypeList( new BooleanType( true ), new BooleanType( false ) );
 
-		$json    = $list1->toJson( $pretty );
+		$json    = $list1->toJson();
 		$decoded = json_decode( $json, true, 512, JSON_THROW_ON_ERROR );
 
 		self::assertSame( [ true, false ], $decoded );
 	}
 
-	public static function toJsonProvider(): iterable
-	{
-		yield 'compact json' => [ false ];
-		yield 'pretty json' => [ true ];
-	}
-
 	public function testJsonSerialize(): void
 	{
-		$list1 = new BooleanTypeList( 			new BooleanType( true ),			new BooleanType( false ), );
+		$list1 = new BooleanTypeList( new BooleanType( true ), new BooleanType( false ) );
 
-		self::assertSame(
-			[ true, false ],
-			array_map(
-				static fn( RepresentsBoolean $type ): bool => $type->toBoolean(),
-				$list1->jsonSerialize()
-			)
-		);
+		$json    = json_encode( $list1 );
+		$decoded = json_decode( $json, true, 512, JSON_THROW_ON_ERROR );
+
+		self::assertSame( [ true, false ], $decoded );
 	}
 
-	/* ---------------------------------
-	 * first / last
-	 * --------------------------------- */
-
-	public function testFirstAndLast(): void
+	public function testFirst(): void
 	{
 		$type1 = new BooleanType( true );
 		$type2 = new BooleanType( false );
 
-		$list1 = new BooleanTypeList(  $type1, $type2  );
+		$list1 = new BooleanTypeList( $type1, $type2 );
 
 		self::assertTrue( $list1->first()->toBoolean() );
-		self::assertFalse( $list1->last()->toBoolean() );
 	}
 
-	/* ---------------------------------
-	 * findIndex
-	 * --------------------------------- */
+	public function testLast(): void
+	{
+		$type1 = new BooleanType( true );
+		$type2 = new BooleanType( false );
+
+		$list1 = new BooleanTypeList( $type1, $type2 );
+
+		self::assertFalse( $list1->last()->toBoolean() );
+	}
 
 	public function testFindIndex(): void
 	{
 		$type1 = new BooleanType( true );
 		$type2 = new BooleanType( false );
 
-		$list1 = new BooleanTypeList(  $type1, $type2  );
+		$list1 = new BooleanTypeList( $type1, $type2 );
 
 		$matcher = new class implements MatchesType {
 			public function matches( RepresentsType $type ): bool
@@ -372,9 +395,9 @@ class BooleanTypeListTest extends TestCase
 		self::assertSame( 1, $list1->findIndex( $matcher ) );
 	}
 
-	public function testFindIndexReturnsNull(): void
+	public function testFindIndexReturnsNullIfNothingMatched(): void
 	{
-		$list1 = new BooleanTypeList(  new BooleanType( true )  );
+		$list1 = new BooleanTypeList( new BooleanType( true ) );
 
 		$matcher = new class implements MatchesType {
 			public function matches( RepresentsType $type ): bool
@@ -386,39 +409,10 @@ class BooleanTypeListTest extends TestCase
 		self::assertNull( $list1->findIndex( $matcher ) );
 	}
 
-	/* ---------------------------------
-	 * equalsValues
-	 * --------------------------------- */
-
-	/**
-	 * @dataProvider equalsValuesProvider
-	 */
-	public function testEqualsValues( array $values1, array $values2, bool $expected ): void
+	public function testThrowsInvalidTypeExceptionIfValueInvalid(): void
 	{
-		$list1 = new BooleanTypeList( ...$values1 );
-		$list2 = new BooleanTypeList( ...$values2 );
+		$this->expectExceptionObject( new InvalidBooleanTypeListException( 'Invalid ' . OnlyTrueBooleanTypeList::class ) );
 
-		self::assertSame( $expected, $list1->equalsValues( $list2 ) );
-	}
-
-	public static function equalsValuesProvider(): iterable
-	{
-		yield 'same values same order' => [
-			[ new BooleanType( true ), new BooleanType( false ) ],
-			[ new BooleanType( true ), new BooleanType( false ) ],
-			true,
-		];
-
-		yield 'same values different order' => [
-			[ new BooleanType( true ), new BooleanType( false ) ],
-			[ new BooleanType( false ), new BooleanType( true ) ],
-			false,
-		];
-
-		yield 'different values' => [
-			[ new BooleanType( true ) ],
-			[ new BooleanType( false ) ],
-			false,
-		];
+		new OnlyTrueBooleanTypeList( new BooleanType( false ) );
 	}
 }

@@ -34,7 +34,7 @@ abstract class AbstractBooleanTypeList implements RepresentsMutableBooleanTypeLi
 		return new static(
 			...array_udiff(
 				$this->booleanTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsBoolean $firstType, RepresentsBoolean $secondType ): int
 				{
 					return $firstType->equals( $secondType ) ? 0 : 1;
@@ -48,10 +48,10 @@ abstract class AbstractBooleanTypeList implements RepresentsMutableBooleanTypeLi
 		return new static(
 			...array_uintersect(
 				$this->booleanTypes,
-				$list,
+				$list->toNativeType(),
 				function ( RepresentsBoolean $firstType, RepresentsBoolean $secondType ): int
 				{
-					return $firstType->equals( $secondType ) ? 1 : 0;
+					return $firstType->equals( $secondType ) ? 0 : 1;
 				}
 			)
 		);
