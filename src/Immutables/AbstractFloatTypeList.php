@@ -179,11 +179,16 @@ abstract class AbstractFloatTypeList implements RepresentsImmutableFloatTypeList
 
 	protected function validate( array $types ): void
 	{
-		foreach ( $types as $type )
+		foreach ( $types as $index => $type )
 		{
+			if ( !is_int( $index ) )
+			{
+				throw (new InvalidFloatTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
+			}
+
 			if ( !($type instanceof RepresentsFloat) || !static::isValueValid( $type ) )
 			{
-				throw (new InvalidFloatTypeListException( 'Invalid ' . static::class ))->setContext( [ 'value' => $type, ] );
+				throw (new InvalidFloatTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $type, ] );
 			}
 		}
 	}

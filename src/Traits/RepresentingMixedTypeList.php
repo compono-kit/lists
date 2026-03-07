@@ -91,9 +91,9 @@ trait RepresentingMixedTypeList
 	 */
 	public function iterateNativeTypes(): \Iterator
 	{
-		foreach ( $this->mixedTypes as $key => $type )
+		foreach ( $this->mixedTypes as $index => $type )
 		{
-			yield (string)$key => $type->toNativeType();
+			yield $index => $type->toNativeType();
 		}
 	}
 

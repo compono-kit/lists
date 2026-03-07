@@ -165,11 +165,16 @@ abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
 
 	protected function validate( array $types ): void
 	{
-		foreach ( $types as $type )
+		foreach ( $types as $index => $type )
 		{
+			if ( !is_int( $index ) )
+			{
+				throw (new InvalidMixedTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
+			}
+
 			if ( !($type instanceof RepresentsType) || !static::isValueValid( $type ) )
 			{
-				throw (new InvalidMixedTypeListException( 'Invalid ' . static::class ))->setContext( [ 'value' => $type, ] );
+				throw (new InvalidMixedTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $type, ] );
 			}
 		}
 	}

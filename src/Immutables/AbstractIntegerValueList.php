@@ -159,6 +159,22 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 		return new static( ...array_slice( $this->integers, $index, $count ) );
 	}
 
+	protected function validate( array $values ): void
+	{
+		foreach ( $values as $index => $value )
+		{
+			if ( !is_int( $index ) )
+			{
+				throw (new InvalidIntegerValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
+			}
+
+			if ( !is_int( $value ) || !static::isValueValid( $value ) )
+			{
+				throw (new InvalidIntegerValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $value, ] );
+			}
+		}
+	}
+
 	private function existsIn( int $valueToCheck, RepresentsList $list ): bool
 	{
 		foreach ( $list as $value )
@@ -170,16 +186,5 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 		}
 
 		return false;
-	}
-
-	protected function validate( array $values ): void
-	{
-		foreach ( $values as $value )
-		{
-			if ( !is_int( $value ) || !static::isValueValid( $value ) )
-			{
-				throw (new InvalidIntegerValueListException( 'Invalid ' . static::class ))->setContext( [ 'value' => $value, ] );
-			}
-		}
 	}
 }

@@ -164,6 +164,22 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 		return new static( ...array_slice( $this->booleanTypes, $index, $count ) );
 	}
 
+	protected function validate( array $types ): void
+	{
+		foreach ( $types as $index => $type )
+		{
+			if ( !is_int( $index ) )
+			{
+				throw (new InvalidBooleanTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
+			}
+
+			if ( !($type instanceof RepresentsBoolean) || !static::isValueValid( $type ) )
+			{
+				throw (new InvalidBooleanTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $type, ] );
+			}
+		}
+	}
+
 	private function existsIn( RepresentsBoolean $typeToCheck, RepresentsList $list ): bool
 	{
 		foreach ( $list as $type )
@@ -175,16 +191,5 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 		}
 
 		return false;
-	}
-
-	protected function validate( array $types ): void
-	{
-		foreach ( $types as $type )
-		{
-			if ( !($type instanceof RepresentsBoolean) || !static::isValueValid( $type ) )
-			{
-				throw (new InvalidBooleanTypeListException( 'Invalid ' . static::class ))->setContext( [ 'value' => $type, ] );
-			}
-		}
 	}
 }

@@ -166,11 +166,16 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 
 	protected function validate( array $types ): void
 	{
-		foreach ( $types as $type )
+		foreach ( $types as $index => $type )
 		{
+			if ( !is_int( $index ) )
+			{
+				throw (new InvalidIntegerTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
+			}
+
 			if ( !($type instanceof RepresentsInteger) || !static::isValueValid( $type ) )
 			{
-				throw (new InvalidIntegerTypeListException( 'Invalid ' . static::class ))->setContext( [ 'value' => $type, ] );
+				throw (new InvalidIntegerTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $type, ] );
 			}
 		}
 	}

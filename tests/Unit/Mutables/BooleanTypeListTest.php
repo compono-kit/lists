@@ -299,8 +299,6 @@ class BooleanTypeListTest extends TestCase
 
 	public function testGet(): void
 	{
-		$this->expectException( MissingIndexException::class );
-
 		$list = new BooleanTypeList(
 			new BooleanType( true ),
 			new BooleanType( false ),
@@ -308,15 +306,15 @@ class BooleanTypeListTest extends TestCase
 			new BooleanType( false ),
 		);
 
-		self::assertEquals( false, $list->get( 4 )->toBoolean() );
+		self::assertEquals( new BooleanType( false ), $list->get( 3 ) );
 	}
 
 	public function testGetThrowsExceptionIfIndexNotExists(): void
 	{
 		$this->expectException( MissingIndexException::class );
 
-		$list1 = new BooleanTypeList( new BooleanType( true ) );
-		$list1->get( 42 );
+		$list = new BooleanTypeList( new BooleanType( true ) );
+		$list->get( 42 );
 	}
 
 	public static function fromValueList( RepresentsBooleanValueList $list, BuildsBooleanTypes $factory ): static
@@ -332,9 +330,9 @@ class BooleanTypeListTest extends TestCase
 
 	public function testToJson(): void
 	{
-		$list1 = new BooleanTypeList( new BooleanType( true ), new BooleanType( false ) );
+		$list = new BooleanTypeList( new BooleanType( true ), new BooleanType( false ) );
 
-		$json    = $list1->toJson();
+		$json    = $list->toJson();
 		$decoded = json_decode( $json, true, 512, JSON_THROW_ON_ERROR );
 
 		self::assertSame( [ true, false ], $decoded );
@@ -342,9 +340,9 @@ class BooleanTypeListTest extends TestCase
 
 	public function testJsonSerialize(): void
 	{
-		$list1 = new BooleanTypeList( new BooleanType( true ), new BooleanType( false ) );
+		$list = new BooleanTypeList( new BooleanType( true ), new BooleanType( false ) );
 
-		$json    = json_encode( $list1 );
+		$json    = json_encode( $list );
 		$decoded = json_decode( $json, true, 512, JSON_THROW_ON_ERROR );
 
 		self::assertSame( [ true, false ], $decoded );
@@ -355,9 +353,9 @@ class BooleanTypeListTest extends TestCase
 		$type1 = new BooleanType( true );
 		$type2 = new BooleanType( false );
 
-		$list1 = new BooleanTypeList( $type1, $type2 );
+		$list = new BooleanTypeList( $type1, $type2 );
 
-		self::assertTrue( $list1->first()->toBoolean() );
+		self::assertEquals( $type1, $list->first() );
 	}
 
 	public function testLast(): void
@@ -365,9 +363,9 @@ class BooleanTypeListTest extends TestCase
 		$type1 = new BooleanType( true );
 		$type2 = new BooleanType( false );
 
-		$list1 = new BooleanTypeList( $type1, $type2 );
+		$list = new BooleanTypeList( $type1, $type2 );
 
-		self::assertFalse( $list1->last()->toBoolean() );
+		self::assertEquals( $type2, $list->last() );
 	}
 
 	public function testFindIndex(): void
@@ -375,7 +373,7 @@ class BooleanTypeListTest extends TestCase
 		$type1 = new BooleanType( true );
 		$type2 = new BooleanType( false );
 
-		$list1 = new BooleanTypeList( $type1, $type2 );
+		$list = new BooleanTypeList( $type1, $type2 );
 
 		$matcher = new class implements MatchesType {
 			public function matches( RepresentsType $type ): bool
@@ -384,12 +382,12 @@ class BooleanTypeListTest extends TestCase
 			}
 		};
 
-		self::assertSame( 1, $list1->findIndex( $matcher ) );
+		self::assertSame( 1, $list->findIndex( $matcher ) );
 	}
 
 	public function testFindIndexReturnsNullIfNothingMatched(): void
 	{
-		$list1 = new BooleanTypeList( new BooleanType( true ) );
+		$list = new BooleanTypeList( new BooleanType( true ) );
 
 		$matcher = new class implements MatchesType {
 			public function matches( RepresentsType $type ): bool
@@ -398,7 +396,7 @@ class BooleanTypeListTest extends TestCase
 			}
 		};
 
-		self::assertNull( $list1->findIndex( $matcher ) );
+		self::assertNull( $list->findIndex( $matcher ) );
 	}
 
 	public function testThrowsInvalidTypeExceptionIfValueInvalid(): void

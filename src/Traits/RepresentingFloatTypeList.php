@@ -89,9 +89,9 @@ trait RepresentingFloatTypeList
 	 */
 	public function iterateFloats(): \Iterator
 	{
-		foreach ( $this->floatTypes as $key => $type )
+		foreach ( $this->floatTypes as $index => $type )
 		{
-			yield (string)$key => $type->toFloat();
+			yield $index => $type->toFloat();
 		}
 	}
 

@@ -1,0 +1,14 @@
+<?php declare(strict_types=1);
+
+namespace ComponoKit\Types\Lists\Tests\Unit\Immutables\fakes;
+
+use ComponoKit\Types\Interfaces\RepresentsString;
+use ComponoKit\Types\Lists\Immutables\AbstractStringTypeList;
+
+class NoTwoStringTypeList extends AbstractStringTypeList
+{
+	protected static function isValueValid( RepresentsString $type ): bool
+	{
+		return !str_contains( $type->toString(), '2' );
+	}
+}

@@ -92,9 +92,9 @@ trait RepresentingStringList
 	 */
 	public function iterateStrings(): \Iterator
 	{
-		foreach ( $this->stringTypes as $key => $type )
+		foreach ( $this->stringTypes as $index => $type )
 		{
-			yield (string)$key => $type->toString();
+			yield $index => $type->toString();
 		}
 	}
 

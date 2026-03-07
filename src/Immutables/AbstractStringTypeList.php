@@ -107,6 +107,7 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 	public function sort( ComparesTypes $comparer ): static
 	{
 		$types = $this->stringTypes;
+
 		usort(
 			$types,
 			function ( RepresentsString $firstType, RepresentsString $secondType ) use ( $comparer ): int

@@ -89,9 +89,9 @@ trait RepresentingIntegerTypeList
 	 */
 	public function iterateIntegers(): \Iterator
 	{
-		foreach ( $this->integerTypes as $key => $type )
+		foreach ( $this->integerTypes as $index => $type )
 		{
-			yield (string)$key => $type->toInteger();
+			yield $index => $type->toInteger();
 		}
 	}
 

@@ -159,6 +159,22 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 		return new static( ...array_slice( $this->floats, $index, $count ) );
 	}
 
+	protected function validate( array $values ): void
+	{
+		foreach ( $values as $index => $value )
+		{
+			if ( !is_int( $index ) )
+			{
+				throw (new InvalidFloatValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
+			}
+
+			if ( !is_float( $value ) || !static::isValueValid( $value ) )
+			{
+				throw (new InvalidFloatValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $value, ] );
+			}
+		}
+	}
+
 	private function existsIn( float $valueToCheck, RepresentsList $list ): bool
 	{
 		foreach ( $list as $value )
@@ -170,16 +186,5 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 		}
 
 		return false;
-	}
-
-	protected function validate( array $values ): void
-	{
-		foreach ( $values as $value )
-		{
-			if ( !is_float( $value ) || !static::isValueValid( $value ) )
-			{
-				throw (new InvalidFloatValueListException( 'Invalid ' . static::class ))->setContext( [ 'value' => $value, ] );
-			}
-		}
 	}
 }

@@ -159,6 +159,22 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 		return new static( ...array_slice( $this->strings, $index, $count ) );
 	}
 
+	protected function validate( array $values ): void
+	{
+		foreach ( $values as $index => $value )
+		{
+			if ( !is_int( $index ) )
+			{
+				throw (new InvalidStringValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
+			}
+
+			if ( !is_string( $value ) || !static::isValueValid( $value ) )
+			{
+				throw (new InvalidStringValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $value, ] );
+			}
+		}
+	}
+
 	private function existsIn( string $valueToCheck, RepresentsList $list ): bool
 	{
 		foreach ( $list as $value )
@@ -170,16 +186,5 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 		}
 
 		return false;
-	}
-
-	protected function validate( array $values ): void
-	{
-		foreach ( $values as $value )
-		{
-			if ( !is_string( $value ) || !static::isValueValid( $value ) )
-			{
-				throw (new InvalidStringValueListException( 'Invalid ' . static::class ))->setContext( [ 'value' => $value, ] );
-			}
-		}
 	}
 }

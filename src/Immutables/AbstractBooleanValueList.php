@@ -3,6 +3,7 @@
 namespace ComponoKit\Types\Lists\Immutables;
 
 use ComponoKit\Types\Lists\Exceptions\InvalidBooleanTypeListException;
+use ComponoKit\Types\Lists\Exceptions\InvalidBooleanValueListException;
 use ComponoKit\Types\Lists\Interfaces\ComparesValues;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableBooleanValueList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanTypeList;
@@ -162,6 +163,22 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 		return new static( ...array_slice( $this->booleans, $index, $count ) );
 	}
 
+	protected function validate( array $values ): void
+	{
+		foreach ( $values as $index => $value )
+		{
+			if ( !is_int( $index ) )
+			{
+				throw (new InvalidBooleanValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
+			}
+
+			if ( !is_bool( $value ) )
+			{
+				throw (new InvalidBooleanValueListException( 'Invalid value ' . static::class ))->setContext( [ 'value' => $value, ] );
+			}
+		}
+	}
+
 	private function existsIn( bool $valueToCheck, RepresentsList $list ): bool
 	{
 		foreach ( $list as $value )
@@ -173,16 +190,5 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 		}
 
 		return false;
-	}
-
-	protected function validate( array $values ): void
-	{
-		foreach ( $values as $value )
-		{
-			if ( !is_bool( $value ) )
-			{
-				throw (new InvalidBooleanTypeListException( 'Invalid ' . static::class ))->setContext( [ 'value' => $value, ] );
-			}
-		}
 	}
 }

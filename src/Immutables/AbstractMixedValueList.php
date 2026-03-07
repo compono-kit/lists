@@ -159,6 +159,22 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 		return new static( ...array_slice( $this->mixedValues, $index, $count ) );
 	}
 
+	protected function validate( array $values ): void
+	{
+		foreach ( $values as $index => $value )
+		{
+			if ( !is_int( $index ) )
+			{
+				throw (new InvalidMixedValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
+			}
+
+			if ( (!is_scalar( $value ) && !is_array( $value )) || !static::isValueValid( $value ) )
+			{
+				throw (new InvalidMixedValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $value, ] );
+			}
+		}
+	}
+
 	private function existsIn( int $valueToCheck, RepresentsList $list ): bool
 	{
 		foreach ( $list as $value )
@@ -170,16 +186,5 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 		}
 
 		return false;
-	}
-
-	protected function validate( array $values ): void
-	{
-		foreach ( $values as $value )
-		{
-			if ( (!is_scalar( $value ) && !is_array( $value )) || !static::isValueValid( $value ) )
-			{
-				throw (new InvalidMixedValueListException( 'Invalid ' . static::class ))->setContext( [ 'value' => $value, ] );
-			}
-		}
 	}
 }

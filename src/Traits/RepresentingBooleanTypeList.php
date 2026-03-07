@@ -89,9 +89,9 @@ trait RepresentingBooleanTypeList
 	 */
 	public function iterateBooleans(): \Iterator
 	{
-		foreach ( $this->booleanTypes as $key => $type )
+		foreach ( $this->booleanTypes as $index => $type )
 		{
-			yield (string)$key => $type->toBoolean();
+			yield $index => $type->toBoolean();
 		}
 	}
 
