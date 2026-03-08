@@ -6,12 +6,13 @@ use ComponoKit\Types\Interfaces\Factories\BuildsTypes;
 use ComponoKit\Types\Interfaces\RepresentsType;
 use ComponoKit\Types\Lists\Exceptions\InvalidMixedTypeListException;
 use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
+use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableMixedTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedValueList;
 use ComponoKit\Types\Lists\Traits\RepresentingMixedTypeList;
 
-abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
+abstract class AbstractMixedTypeList implements RepresentsImmutableMixedTypeList
 {
 	use RepresentingMixedTypeList;
 
@@ -55,12 +56,12 @@ abstract class AbstractMixedTypeList implements RepresentsMixedTypeList
 		return new static( ...$types );
 	}
 
-	public function append( int|float|string|bool|array...$types ): static
+	public function append( RepresentsType ...$types ): static
 	{
 		return new static( ...$this->mixedTypes, ...$types );
 	}
 
-	public function prepend( int|float|string|bool|array...$types ): static
+	public function prepend( RepresentsType ...$types ): static
 	{
 		return new static( ...$types, ...$this->mixedTypes );
 	}
