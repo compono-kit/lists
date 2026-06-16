@@ -18,7 +18,7 @@ abstract class AbstractMixedTypeList implements RepresentsImmutableMixedTypeList
 
 	public function __construct( RepresentsType ...$mixedTypes )
 	{
-		$this->validate( $mixedTypes );
+		$this->validate( ...$mixedTypes );
 
 		$this->mixedTypes = $mixedTypes;
 	}
@@ -164,7 +164,7 @@ abstract class AbstractMixedTypeList implements RepresentsImmutableMixedTypeList
 		return new static( ...array_slice( $this->mixedTypes, $index, $count ) );
 	}
 
-	protected function validate( array $types ): void
+	protected function validate( RepresentsType ...$types ): void
 	{
 		foreach ( $types as $index => $type )
 		{
@@ -173,7 +173,7 @@ abstract class AbstractMixedTypeList implements RepresentsImmutableMixedTypeList
 				throw (new InvalidMixedTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 
-			if ( !($type instanceof RepresentsType) || !static::isValueValid( $type ) )
+			if ( !static::isValueValid( $type ) )
 			{
 				throw (new InvalidMixedTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $type, ] );
 			}

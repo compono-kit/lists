@@ -406,6 +406,16 @@ class MixedTypeListTest extends TestCase
 		);
 	}
 
+	public function testToJsonPretty(): void
+	{
+		$list = new MixedTypeList( new StringType( 'test-1' ), new IntegerType( 2 ), new BooleanType( true ) );
+
+		$json = $list->toJson( true );
+
+		self::assertStringContainsString( "\n", $json );
+		self::assertSame( [ 'test-1', 2, true ], json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+	}
+
 	public function testJsonSerialize(): void
 	{
 		$list = new MixedTypeList(
@@ -480,5 +490,37 @@ class MixedTypeListTest extends TestCase
 		$this->expectExceptionObject( new InvalidMixedTypeListException( 'Invalid value in ' . NoFloatTypeList::class ) );
 
 		new NoFloatTypeList( new FloatType( 1.0 ) );
+	}
+
+	public function testThrowsExceptionIfKeysAreUsed(): void
+	{
+		$this->expectExceptionObject(
+			new InvalidMixedTypeListException( 'Invalid index in ' . MixedTypeList::class )
+		);
+
+		new MixedTypeList( ...[ 'foo' => new BooleanType( true ) ] );
+	}
+
+	public function testToNativeType(): void
+	{
+		$type1 = new StringType( 'test-1' );
+		$type2 = new IntegerType( 2 );
+		$list  = new MixedTypeList( $type1, $type2 );
+
+		self::assertSame( [ $type1, $type2 ], $list->toNativeType() );
+	}
+
+	public function testToNativeTypes(): void
+	{
+		$list = new MixedTypeList( new StringType( 'test-1' ), new IntegerType( 2 ), new BooleanType( true ) );
+
+		self::assertSame( [ 'test-1', 2, true ], $list->toNativeTypes() );
+	}
+
+	public function testIterateNativeTypes(): void
+	{
+		$list = new MixedTypeList( new StringType( 'test-1' ), new IntegerType( 2 ), new BooleanType( true ) );
+
+		self::assertSame( [ 'test-1', 2, true ], iterator_to_array( $list->iterateNativeTypes() ) );
 	}
 }

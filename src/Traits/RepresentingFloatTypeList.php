@@ -57,11 +57,6 @@ trait RepresentingFloatTypeList
 
 		foreach ( $list as $index => $type )
 		{
-			if ( !isset( $this->floatTypes[ $index ] ) )
-			{
-				return false;
-			}
-
 			if ( !$type->equals( $this->floatTypes[ $index ] ) )
 			{
 				return false;

@@ -57,7 +57,7 @@ trait RepresentingMutableBooleanValueList
 
 	public function unique(): void
 	{
-		$this->booleans = array_unique( $this->booleans );
+		$this->booleans = array_values( array_unique( $this->booleans ) );
 	}
 
 	public function sort( ComparesValues $comparer ): void

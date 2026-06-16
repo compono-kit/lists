@@ -13,7 +13,7 @@ abstract class AbstractIntegerValueList implements RepresentsMutableIntegerValue
 
 	public function __construct( int ...$integers )
 	{
-		$this->validate( $integers );
+		$this->validate( ...$integers );
 
 		$this->integers = $integers;
 	}
@@ -74,11 +74,11 @@ abstract class AbstractIntegerValueList implements RepresentsMutableIntegerValue
 		$this->integers = array_slice( $this->integers, $index, $count );
 	}
 
-	protected function validate( array $values ): void
+	protected function validate( int ...$values ): void
 	{
 		foreach ( $values as $index => $value )
 		{
-			if ( !is_int( $index ) || !is_int( $value ) || !static::isValueValid( $value ) )
+			if ( !is_int( $index ) || !static::isValueValid( $value ) )
 			{
 				throw (new InvalidIntegerValueListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}

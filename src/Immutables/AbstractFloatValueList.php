@@ -3,20 +3,20 @@
 namespace ComponoKit\Types\Lists\Immutables;
 
 use ComponoKit\Types\Lists\Exceptions\InvalidFloatValueListException;
-use ComponoKit\Types\Lists\Immutables\Traits\RepresentingImmutableFloatValueList;
 use ComponoKit\Types\Lists\Interfaces\ComparesValues;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableFloatValueList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsFloatTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsFloatValueList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsList;
+use ComponoKit\Types\Lists\Traits\RepresentingFloatValueList;
 
 abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueList
 {
-	use RepresentingImmutableFloatValueList;
+	use RepresentingFloatValueList;
 
 	public function __construct( float ...$floats )
 	{
-		$this->validate( $floats );
+		$this->validate( ...$floats );
 
 		$this->floats = $floats;
 	}
@@ -159,7 +159,7 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 		return new static( ...array_slice( $this->floats, $index, $count ) );
 	}
 
-	protected function validate( array $values ): void
+	protected function validate( float ...$values ): void
 	{
 		foreach ( $values as $index => $value )
 		{
@@ -168,7 +168,7 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 				throw (new InvalidFloatValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 
-			if ( !is_float( $value ) || !static::isValueValid( $value ) )
+			if ( !static::isValueValid( $value ) )
 			{
 				throw (new InvalidFloatValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $value, ] );
 			}
@@ -179,7 +179,7 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 	{
 		foreach ( $list as $value )
 		{
-			if ( $value->equals( $valueToCheck ) )
+			if ( $value === $valueToCheck )
 			{
 				return true;
 			}

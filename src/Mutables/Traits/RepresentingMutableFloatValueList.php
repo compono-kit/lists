@@ -57,7 +57,7 @@ trait RepresentingMutableFloatValueList
 
 	public function unique(): void
 	{
-		$this->floats = array_unique( $this->floats );
+		$this->floats = array_values( array_unique( $this->floats ) );
 	}
 
 	public function sort( ComparesValues $comparer ): void

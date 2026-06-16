@@ -14,20 +14,12 @@ abstract class AbstractIntegerTypeList implements RepresentsMutableIntegerTypeLi
 
 	public function __construct( RepresentsInteger ...$integerTypes )
 	{
-		$this->validate( $integerTypes );
+		$this->validate( ...$integerTypes );
 
 		$this->integerTypes = $integerTypes;
 	}
 
 	abstract protected static function isValueValid( RepresentsInteger $type ): bool;
-
-	/**
-	 * @throws \JsonException
-	 */
-	public static function fromJson( string $json ): static
-	{
-		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
-	}
 
 	public function diff( RepresentsIntegerTypeList $list ): RepresentsIntegerTypeList
 	{
@@ -75,11 +67,11 @@ abstract class AbstractIntegerTypeList implements RepresentsMutableIntegerTypeLi
 		$this->integerTypes = array_slice( $this->integerTypes, $index, $count );
 	}
 
-	protected function validate( array $types ): void
+	protected function validate( RepresentsInteger ...$types ): void
 	{
 		foreach ( $types as $index => $type )
 		{
-			if ( !is_int( $index ) || !($type instanceof RepresentsInteger) || !static::isValueValid( $type ) )
+			if ( !is_int( $index ) || !static::isValueValid( $type ) )
 			{
 				throw (new InvalidIntegerTypeListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}

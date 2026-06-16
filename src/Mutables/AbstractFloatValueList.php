@@ -13,7 +13,7 @@ abstract class AbstractFloatValueList implements RepresentsMutableFloatValueList
 
 	public function __construct( float ...$floats )
 	{
-		$this->validate( $floats );
+		$this->validate( ...$floats );
 
 		$this->floats = $floats;
 	}
@@ -74,11 +74,11 @@ abstract class AbstractFloatValueList implements RepresentsMutableFloatValueList
 		$this->floats = array_slice( $this->floats, $index, $count );
 	}
 
-	protected function validate( array $values ): void
+	protected function validate( float ...$values ): void
 	{
 		foreach ( $values as $index => $value )
 		{
-			if ( !is_int( $index ) || !is_float( $value ) || !static::isValueValid( $value ) )
+			if ( !is_int( $index ) || !static::isValueValid( $value ) )
 			{
 				throw (new InvalidFloatValueListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}

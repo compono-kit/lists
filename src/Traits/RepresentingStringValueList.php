@@ -56,11 +56,6 @@ trait RepresentingStringValueList
 
 		foreach ( $list as $index => $value )
 		{
-			if ( !isset( $this->strings[ $index ] ) )
-			{
-				return false;
-			}
-
 			if ( $value !== $this->get( $index ) )
 			{
 				return false;

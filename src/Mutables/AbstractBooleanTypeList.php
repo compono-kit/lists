@@ -14,20 +14,12 @@ abstract class AbstractBooleanTypeList implements RepresentsMutableBooleanTypeLi
 
 	public function __construct( RepresentsBoolean ...$booleanTypes )
 	{
-		$this->validate( $booleanTypes );
+		$this->validate( ...$booleanTypes );
 
 		$this->booleanTypes = $booleanTypes;
 	}
 
 	abstract protected static function isValueValid( RepresentsBoolean $type ): bool;
-
-	/**
-	 * @throws \JsonException
-	 */
-	public static function fromJson( string $json ): static
-	{
-		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
-	}
 
 	public function diff( RepresentsBooleanTypeList $list ): RepresentsBooleanTypeList
 	{
@@ -75,11 +67,11 @@ abstract class AbstractBooleanTypeList implements RepresentsMutableBooleanTypeLi
 		$this->booleanTypes = array_slice( $this->booleanTypes, $index, $count );
 	}
 
-	protected function validate( array $types ): void
+	protected function validate( RepresentsBoolean ...$types ): void
 	{
-		foreach ( $types as $type )
+		foreach ( $types as $index => $type )
 		{
-			if ( !($type instanceof RepresentsBoolean) || !static::isValueValid( $type ) )
+			if ( !is_int( $index ) || !static::isValueValid( $type ) )
 			{
 				throw (new InvalidBooleanTypeListException( 'Invalid ' . static::class ))->setContext( [ 'value' => $type, ] );
 			}

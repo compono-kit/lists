@@ -5,11 +5,11 @@ namespace ComponoKit\Types\Lists\Mutables\Traits;
 use ComponoKit\Types\Interfaces\RepresentsString;
 use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringTypeList;
-use ComponoKit\Types\Lists\Traits\RepresentingStringList;
+use ComponoKit\Types\Lists\Traits\RepresentingStringTypeList;
 
 trait RepresentingMutableStringTypeList
 {
-	use RepresentingStringList;
+	use RepresentingStringTypeList;
 
 	public function remove( int $index ): void
 	{
@@ -57,7 +57,21 @@ trait RepresentingMutableStringTypeList
 
 	public function unique(): void
 	{
-		$this->stringTypes = array_unique( $this->stringTypes );
+		$existingTypes = [];
+		$uniqueTypes   = [];
+
+		foreach ( $this->stringTypes as $type )
+		{
+			$key = $type->toNativeType();
+
+			if ( !isset( $existingTypes[ $key ] ) )
+			{
+				$existingTypes[ $key ] = true;
+				$uniqueTypes[]         = $type;
+			}
+		}
+
+		$this->stringTypes = $uniqueTypes;
 	}
 
 	public function sort( ComparesTypes $comparer ): void

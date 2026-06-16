@@ -353,6 +353,16 @@ class IntegerTypeListTest extends TestCase
 		self::assertSame( [ 1, 2 ], $decoded );
 	}
 
+	public function testToJsonPretty(): void
+	{
+		$list = new IntegerTypeList( new IntegerType( 1 ), new IntegerType( 2 ) );
+
+		$json = $list->toJson( true );
+
+		self::assertStringContainsString( "\n", $json );
+		self::assertSame( [ 1, 2 ], json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+	}
+
 	public function testJsonSerialize(): void
 	{
 		$list = new IntegerTypeList( new IntegerType( 1 ), new IntegerType( 2 ) );
@@ -412,5 +422,37 @@ class IntegerTypeListTest extends TestCase
 		);
 
 		new NoTwoIntegerTypeList( new IntegerType( 2 ) );
+	}
+
+	public function testThrowsExceptionIfKeysAreUsed(): void
+	{
+		$this->expectExceptionObject(
+			new InvalidIntegerTypeListException( 'Invalid index in ' . IntegerTypeList::class )
+		);
+
+		new IntegerTypeList( ...[ 'foo' => new IntegerType( 3 ) ] );
+	}
+
+	public function testToNativeType(): void
+	{
+		$type1 = new IntegerType( 1 );
+		$type2 = new IntegerType( 2 );
+		$list  = new IntegerTypeList( $type1, $type2 );
+
+		self::assertSame( [ $type1, $type2 ], $list->toNativeType() );
+	}
+
+	public function testToIntegers(): void
+	{
+		$list = new IntegerTypeList( new IntegerType( 1 ), new IntegerType( 2 ) );
+
+		self::assertSame( [ 1, 2 ], $list->toIntegers() );
+	}
+
+	public function testIterateIntegers(): void
+	{
+		$list = new IntegerTypeList( new IntegerType( 1 ), new IntegerType( 2 ) );
+
+		self::assertSame( [ 1, 2 ], iterator_to_array( $list->iterateIntegers() ) );
 	}
 }

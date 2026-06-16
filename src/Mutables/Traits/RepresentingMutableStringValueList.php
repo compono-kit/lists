@@ -3,8 +3,8 @@
 namespace ComponoKit\Types\Lists\Mutables\Traits;
 
 use ComponoKit\Types\Lists\Interfaces\ComparesValues;
-use ComponoKit\Types\Lists\Interfaces\RepresentsStringValueList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringTypeList;
+use ComponoKit\Types\Lists\Interfaces\RepresentsStringValueList;
 use ComponoKit\Types\Lists\Traits\RepresentingStringValueList;
 
 trait RepresentingMutableStringValueList
@@ -57,7 +57,7 @@ trait RepresentingMutableStringValueList
 
 	public function unique(): void
 	{
-		$this->strings = array_unique( $this->strings );
+		$this->strings = array_values( array_unique( $this->strings ) );
 	}
 
 	public function sort( ComparesValues $comparer ): void

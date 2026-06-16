@@ -13,7 +13,7 @@ abstract class AbstractMixedValueList implements RepresentsMutableMixedValueList
 
 	public function __construct( int|float|string|bool|array ...$mixedValues )
 	{
-		$this->validate( $mixedValues );
+		$this->validate( ...$mixedValues );
 
 		$this->mixedValues = $mixedValues;
 	}
@@ -74,11 +74,11 @@ abstract class AbstractMixedValueList implements RepresentsMutableMixedValueList
 		$this->mixedValues = array_slice( $this->mixedValues, $index, $count );
 	}
 
-	protected function validate( array $values ): void
+	protected function validate( int|float|string|bool|array ...$values ): void
 	{
 		foreach ( $values as $index => $value )
 		{
-			if ( !is_int( $index ) || (!is_scalar( $value ) && !is_array( $value )) || !static::isValueValid( $value ) )
+			if ( !is_int( $index ) || !static::isValueValid( $value ) )
 			{
 				throw (new InvalidMixedValueListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}

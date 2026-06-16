@@ -57,7 +57,7 @@ trait RepresentingMutableIntegerValueList
 
 	public function unique(): void
 	{
-		$this->integers = array_unique( $this->integers );
+		$this->integers = array_values( array_unique( $this->integers ) );
 	}
 
 	public function sort( ComparesValues $comparer ): void

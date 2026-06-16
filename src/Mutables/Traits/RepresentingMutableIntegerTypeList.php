@@ -57,7 +57,21 @@ trait RepresentingMutableIntegerTypeList
 
 	public function unique(): void
 	{
-		$this->integerTypes = array_unique( $this->integerTypes );
+		$existingTypes = [];
+		$uniqueTypes   = [];
+
+		foreach ( $this->integerTypes as $type )
+		{
+			$key = $type->toNativeType();
+
+			if ( !isset( $existingTypes[ $key ] ) )
+			{
+				$existingTypes[ $key ] = true;
+				$uniqueTypes[]         = $type;
+			}
+		}
+
+		$this->integerTypes = $uniqueTypes;
 	}
 
 	public function sort( ComparesTypes $comparer ): void

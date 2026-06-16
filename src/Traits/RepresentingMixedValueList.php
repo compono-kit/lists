@@ -56,11 +56,6 @@ trait RepresentingMixedValueList
 
 		foreach ( $list as $index => $value )
 		{
-			if ( !isset( $this->mixedValues[ $index ] ) )
-			{
-				return false;
-			}
-
 			if ( $value !== $this->get( $index ) )
 			{
 				return false;

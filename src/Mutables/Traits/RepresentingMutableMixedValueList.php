@@ -57,7 +57,7 @@ trait RepresentingMutableMixedValueList
 
 	public function unique(): void
 	{
-		$this->mixedValues = array_unique( $this->mixedValues );
+		$this->mixedValues = array_values( array_unique( $this->mixedValues ) );
 	}
 
 	public function sort( ComparesValues $comparer ): void

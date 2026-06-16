@@ -14,20 +14,12 @@ abstract class AbstractStringTypeList implements RepresentsMutableStringTypeList
 
 	public function __construct( RepresentsString ...$stringTypes )
 	{
-		$this->validate( $stringTypes );
+		$this->validate( ...$stringTypes );
 
 		$this->stringTypes = $stringTypes;
 	}
 
 	abstract protected static function isValueValid( RepresentsString $type ): bool;
-
-	/**
-	 * @throws \JsonException
-	 */
-	public static function fromJson( string $json ): static
-	{
-		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
-	}
 
 	public function diff( RepresentsStringTypeList $list ): RepresentsStringTypeList
 	{
@@ -75,11 +67,11 @@ abstract class AbstractStringTypeList implements RepresentsMutableStringTypeList
 		$this->stringTypes = array_slice( $this->stringTypes, $index, $count );
 	}
 
-	protected function validate( array $types ): void
+	protected function validate( RepresentsString ...$types ): void
 	{
 		foreach ( $types as $index => $type )
 		{
-			if ( !is_int( $index ) || !($type instanceof RepresentsString) || !static::isValueValid( $type ) )
+			if ( !is_int( $index ) || !static::isValueValid( $type ) )
 			{
 				throw (new InvalidStringTypeListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}

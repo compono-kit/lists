@@ -3,20 +3,20 @@
 namespace ComponoKit\Types\Lists\Immutables;
 
 use ComponoKit\Types\Lists\Exceptions\InvalidMixedValueListException;
-use ComponoKit\Types\Lists\Immutables\Traits\RepresentingImmutableMixedValueList;
 use ComponoKit\Types\Lists\Interfaces\ComparesValues;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableMixedValueList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedValueList;
+use ComponoKit\Types\Lists\Traits\RepresentingMixedValueList;
 
 abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueList
 {
-	use RepresentingImmutableMixedValueList;
+	use RepresentingMixedValueList;
 
 	public function __construct( int|float|string|bool|array ...$mixedValues )
 	{
-		$this->validate( $mixedValues );
+		$this->validate( ...$mixedValues );
 
 		$this->mixedValues = $mixedValues;
 	}
@@ -104,7 +104,7 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 		$values = $this->mixedValues;
 		usort(
 			$values,
-			function ( int $firstValue, int $secondValue ) use ( $comparer ): int
+			function ( int|float|string|bool|array $firstValue, int|float|string|bool|array $secondValue ) use ( $comparer ): int
 			{
 				return $comparer->compare( $firstValue, $secondValue );
 			}
@@ -119,7 +119,7 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 			...array_udiff(
 				$this->mixedValues,
 				$list->toNativeType(),
-				function ( int $firstType, int $secondType ): int
+				function ( int|float|string|bool|array $firstType, int|float|string|bool|array $secondType ): int
 				{
 					return $firstType === $secondType ? 0 : 1;
 				}
@@ -133,7 +133,7 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 			...array_uintersect(
 				$this->mixedValues,
 				$list->toNativeType(),
-				function ( int $firstType, int $secondType ): int
+				function ( int|float|string|bool|array $firstType, int|float|string|bool|array $secondType ): int
 				{
 					return $firstType === $secondType ? 0 : 1;
 				}
@@ -159,7 +159,7 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 		return new static( ...array_slice( $this->mixedValues, $index, $count ) );
 	}
 
-	protected function validate( array $values ): void
+	protected function validate( int|float|string|bool|array ...$values ): void
 	{
 		foreach ( $values as $index => $value )
 		{
@@ -168,18 +168,18 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 				throw (new InvalidMixedValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 
-			if ( (!is_scalar( $value ) && !is_array( $value )) || !static::isValueValid( $value ) )
+			if ( !static::isValueValid( $value ) )
 			{
 				throw (new InvalidMixedValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $value, ] );
 			}
 		}
 	}
 
-	private function existsIn( int $valueToCheck, RepresentsList $list ): bool
+	private function existsIn( int|float|string|bool|array $valueToCheck, RepresentsList $list ): bool
 	{
 		foreach ( $list as $value )
 		{
-			if ( $value->equals( $valueToCheck ) )
+			if ( $value === $valueToCheck )
 			{
 				return true;
 			}

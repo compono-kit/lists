@@ -8,7 +8,7 @@ use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Interfaces\MatchesType;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringTypeList;
 
-trait RepresentingStringList
+trait RepresentingStringTypeList
 {
 	/** @var RepresentsString[] */
 	private array $stringTypes;
@@ -57,11 +57,6 @@ trait RepresentingStringList
 
 		foreach ( $list as $index => $type )
 		{
-			if ( !isset( $this->stringTypes[ $index ] ) )
-			{
-				return false;
-			}
-
 			if ( !$type->equals( $this->stringTypes[ $index ] ) )
 			{
 				return false;

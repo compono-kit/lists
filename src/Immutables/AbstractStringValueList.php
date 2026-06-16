@@ -3,20 +3,20 @@
 namespace ComponoKit\Types\Lists\Immutables;
 
 use ComponoKit\Types\Lists\Exceptions\InvalidStringValueListException;
-use ComponoKit\Types\Lists\Immutables\Traits\RepresentingImmutableStringValueList;
 use ComponoKit\Types\Lists\Interfaces\ComparesValues;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableStringValueList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringValueList;
+use ComponoKit\Types\Lists\Traits\RepresentingStringValueList;
 
 abstract class AbstractStringValueList implements RepresentsImmutableStringValueList
 {
-	use RepresentingImmutableStringValueList;
+	use RepresentingStringValueList;
 
 	public function __construct( string ...$strings )
 	{
-		$this->validate( $strings );
+		$this->validate( ...$strings );
 
 		$this->strings = $strings;
 	}
@@ -104,7 +104,7 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 		$values = $this->strings;
 		usort(
 			$values,
-			function ( int $firstValue, int $secondValue ) use ( $comparer ): int
+			function ( string $firstValue, string $secondValue ) use ( $comparer ): int
 			{
 				return $comparer->compare( $firstValue, $secondValue );
 			}
@@ -119,7 +119,7 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 			...array_udiff(
 				$this->strings,
 				$list->toNativeType(),
-				function ( int $firstType, int $secondType ): int
+				function ( string $firstType, string $secondType ): int
 				{
 					return $firstType === $secondType ? 0 : 1;
 				}
@@ -133,7 +133,7 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 			...array_uintersect(
 				$this->strings,
 				$list->toNativeType(),
-				function ( int $firstType, int $secondType ): int
+				function ( string $firstType, string $secondType ): int
 				{
 					return $firstType === $secondType ? 0 : 1;
 				}
@@ -159,7 +159,7 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 		return new static( ...array_slice( $this->strings, $index, $count ) );
 	}
 
-	protected function validate( array $values ): void
+	protected function validate( string ...$values ): void
 	{
 		foreach ( $values as $index => $value )
 		{
@@ -168,7 +168,7 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 				throw (new InvalidStringValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 
-			if ( !is_string( $value ) || !static::isValueValid( $value ) )
+			if ( !static::isValueValid( $value ) )
 			{
 				throw (new InvalidStringValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $value, ] );
 			}
@@ -179,7 +179,7 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 	{
 		foreach ( $list as $value )
 		{
-			if ( $value->equals( $valueToCheck ) )
+			if ( $value === $valueToCheck )
 			{
 				return true;
 			}

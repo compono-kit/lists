@@ -56,11 +56,6 @@ trait RepresentingMixedTypeList
 
 		foreach ( $list as $index => $type )
 		{
-			if ( !isset( $this->mixedTypes[ $index ] ) )
-			{
-				return false;
-			}
-
 			if ( !$type->equals( $this->mixedTypes[ $index ] ) )
 			{
 				return false;

@@ -57,7 +57,21 @@ trait RepresentingMutableFloatTypeList
 
 	public function unique(): void
 	{
-		$this->floatTypes = array_unique( $this->floatTypes );
+		$existingTypes = [];
+		$uniqueTypes   = [];
+
+		foreach ( $this->floatTypes as $type )
+		{
+			$key = $type->toNativeType();
+
+			if ( !isset( $existingTypes[ $key ] ) )
+			{
+				$existingTypes[ $key ] = true;
+				$uniqueTypes[]         = $type;
+			}
+		}
+
+		$this->floatTypes = $uniqueTypes;
 	}
 
 	public function sort( ComparesTypes $comparer ): void

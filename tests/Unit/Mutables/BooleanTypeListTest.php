@@ -338,6 +338,16 @@ class BooleanTypeListTest extends TestCase
 		self::assertSame( [ true, false ], $decoded );
 	}
 
+	public function testToJsonPretty(): void
+	{
+		$list = new BooleanTypeList( new BooleanType( true ), new BooleanType( false ) );
+
+		$json = $list->toJson( true );
+
+		self::assertStringContainsString( "\n", $json );
+		self::assertSame( [ true, false ], json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+	}
+
 	public function testJsonSerialize(): void
 	{
 		$list = new BooleanTypeList( new BooleanType( true ), new BooleanType( false ) );

@@ -13,7 +13,7 @@ abstract class AbstractStringValueList implements RepresentsMutableStringValueLi
 
 	public function __construct( string ...$strings )
 	{
-		$this->validate( $strings );
+		$this->validate( ...$strings );
 
 		$this->strings = $strings;
 	}
@@ -74,11 +74,11 @@ abstract class AbstractStringValueList implements RepresentsMutableStringValueLi
 		$this->strings = array_slice( $this->strings, $index, $count );
 	}
 
-	protected function validate( array $values ): void
+	protected function validate( string ...$values ): void
 	{
 		foreach ( $values as $index => $value )
 		{
-			if ( !is_int( $index ) || !is_string( $value ) || !static::isValueValid( $value ) )
+			if ( !is_int( $index ) || !static::isValueValid( $value ) )
 			{
 				throw (new InvalidStringValueListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}

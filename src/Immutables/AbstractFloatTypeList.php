@@ -18,7 +18,7 @@ abstract class AbstractFloatTypeList implements RepresentsImmutableFloatTypeList
 
 	public function __construct( RepresentsFloat ...$floatTypes )
 	{
-		$this->validate( $floatTypes );
+		$this->validate( ...$floatTypes );
 
 		$this->floatTypes = $floatTypes;
 	}
@@ -177,7 +177,7 @@ abstract class AbstractFloatTypeList implements RepresentsImmutableFloatTypeList
 		return false;
 	}
 
-	protected function validate( array $types ): void
+	protected function validate( RepresentsFloat ...$types ): void
 	{
 		foreach ( $types as $index => $type )
 		{
@@ -186,7 +186,7 @@ abstract class AbstractFloatTypeList implements RepresentsImmutableFloatTypeList
 				throw (new InvalidFloatTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 
-			if ( !($type instanceof RepresentsFloat) || !static::isValueValid( $type ) )
+			if ( !static::isValueValid( $type ) )
 			{
 				throw (new InvalidFloatTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $type, ] );
 			}

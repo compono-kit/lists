@@ -13,7 +13,7 @@ abstract class AbstractBooleanValueList implements RepresentsMutableBooleanValue
 
 	public function __construct( bool ...$booleans )
 	{
-		$this->validate( $booleans );
+		$this->validate( ...$booleans );
 
 		$this->booleans = $booleans;
 	}
@@ -74,11 +74,11 @@ abstract class AbstractBooleanValueList implements RepresentsMutableBooleanValue
 		$this->booleans = array_slice( $this->booleans, $index, $count );
 	}
 
-	protected function validate( array $values ): void
+	protected function validate( bool ...$values ): void
 	{
-		foreach ( $values as $value )
+		foreach ( $values as $index => $value )
 		{
-			if ( !is_bool( $value ) || !static::isValueValid( $value ) )
+			if ( !is_int( $index ) || !static::isValueValid( $value ) )
 			{
 				throw (new InvalidBooleanValueListException( 'Invalid ' . static::class ))->setContext( [ 'value' => $value, ] );
 			}

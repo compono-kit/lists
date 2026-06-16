@@ -3,20 +3,20 @@
 namespace ComponoKit\Types\Lists\Immutables;
 
 use ComponoKit\Types\Lists\Exceptions\InvalidIntegerValueListException;
-use ComponoKit\Types\Lists\Immutables\Traits\RepresentingImmutableIntegerValueList;
 use ComponoKit\Types\Lists\Interfaces\ComparesValues;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableIntegerValueList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsIntegerTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsIntegerValueList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsList;
+use ComponoKit\Types\Lists\Traits\RepresentingIntegerValueList;
 
 abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerValueList
 {
-	use RepresentingImmutableIntegerValueList;
+	use RepresentingIntegerValueList;
 
 	public function __construct( int ...$integers )
 	{
-		$this->validate( $integers );
+		$this->validate( ...$integers );
 
 		$this->integers = $integers;
 	}
@@ -159,7 +159,7 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 		return new static( ...array_slice( $this->integers, $index, $count ) );
 	}
 
-	protected function validate( array $values ): void
+	protected function validate( int ...$values ): void
 	{
 		foreach ( $values as $index => $value )
 		{
@@ -168,7 +168,7 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 				throw (new InvalidIntegerValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 
-			if ( !is_int( $value ) || !static::isValueValid( $value ) )
+			if ( !static::isValueValid( $value ) )
 			{
 				throw (new InvalidIntegerValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $value, ] );
 			}
@@ -179,7 +179,7 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 	{
 		foreach ( $list as $value )
 		{
-			if ( $value->equals( $valueToCheck ) )
+			if ( $value === $valueToCheck )
 			{
 				return true;
 			}

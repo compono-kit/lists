@@ -18,7 +18,7 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 
 	public function __construct( RepresentsInteger ...$integerTypes )
 	{
-		$this->validate( $integerTypes );
+		$this->validate( ...$integerTypes );
 
 		$this->integerTypes = $integerTypes;
 	}
@@ -164,7 +164,7 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 		return new static( ...array_slice( $this->integerTypes, $index, $count ) );
 	}
 
-	protected function validate( array $types ): void
+	protected function validate( RepresentsInteger ...$types ): void
 	{
 		foreach ( $types as $index => $type )
 		{
@@ -173,7 +173,7 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 				throw (new InvalidIntegerTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 
-			if ( !($type instanceof RepresentsInteger) || !static::isValueValid( $type ) )
+			if ( !static::isValueValid( $type ) )
 			{
 				throw (new InvalidIntegerTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $type, ] );
 			}

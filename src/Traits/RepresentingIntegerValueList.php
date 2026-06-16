@@ -56,11 +56,6 @@ trait RepresentingIntegerValueList
 
 		foreach ( $list as $index => $value )
 		{
-			if ( !isset( $this->integers[ $index ] ) )
-			{
-				return false;
-			}
-
 			if ( $value !== $this->get( $index ) )
 			{
 				return false;

@@ -14,20 +14,12 @@ abstract class AbstractMixedTypeList implements RepresentsMutableMixedTypeList
 
 	public function __construct( RepresentsType ...$mixedTypes )
 	{
-		$this->validate( $mixedTypes );
+		$this->validate( ...$mixedTypes );
 
 		$this->mixedTypes = $mixedTypes;
 	}
 
 	abstract protected static function isValueValid( RepresentsType $type ): bool;
-
-	/**
-	 * @throws \JsonException
-	 */
-	public static function fromJson( string $json ): static
-	{
-		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
-	}
 
 	public function diff( RepresentsMixedTypeList $list ): RepresentsMixedTypeList
 	{
@@ -75,11 +67,11 @@ abstract class AbstractMixedTypeList implements RepresentsMutableMixedTypeList
 		$this->mixedTypes = array_slice( $this->mixedTypes, $index, $count );
 	}
 
-	protected function validate( array $types ): void
+	protected function validate( RepresentsType ...$types ): void
 	{
 		foreach ( $types as $index => $type )
 		{
-			if ( !is_int( $index ) || !($type instanceof RepresentsType) || !static::isValueValid( $type ) )
+			if ( !is_int( $index ) || !static::isValueValid( $type ) )
 			{
 				throw (new InvalidMixedTypeListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}

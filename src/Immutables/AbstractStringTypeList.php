@@ -10,15 +10,15 @@ use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableStringTypeLi
 use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringValueList;
-use ComponoKit\Types\Lists\Traits\RepresentingStringList;
+use ComponoKit\Types\Lists\Traits\RepresentingStringTypeList;
 
 abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeList
 {
-	use RepresentingStringList;
+	use RepresentingStringTypeList;
 
 	public function __construct( RepresentsString ...$stringTypes )
 	{
-		$this->validate( $stringTypes );
+		$this->validate( ...$stringTypes );
 
 		$this->stringTypes = $stringTypes;
 	}
@@ -165,7 +165,7 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 		return new static( ...array_slice( $this->stringTypes, $index, $count ) );
 	}
 
-	protected function validate( array $types ): void
+	protected function validate( RepresentsString ...$types ): void
 	{
 		foreach ( $types as $index => $type )
 		{
@@ -174,7 +174,7 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 				throw (new InvalidStringTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 
-			if ( !($type instanceof RepresentsString) || !static::isValueValid( $type ) )
+			if ( !static::isValueValid( $type ) )
 			{
 				throw (new InvalidStringTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}

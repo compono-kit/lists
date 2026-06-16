@@ -350,6 +350,16 @@ class StringTypeListTest extends TestCase
 		self::assertSame( [ 'test-1', 'test-2' ], $decoded );
 	}
 
+	public function testToJsonPretty(): void
+	{
+		$list = new StringTypeList( new StringType( 'test-1' ), new StringType( 'test-2' ) );
+
+		$json = $list->toJson( true );
+
+		self::assertStringContainsString( "\n", $json );
+		self::assertSame( [ 'test-1', 'test-2' ], json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+	}
+
 	public function testJsonSerialize(): void
 	{
 		$list = new StringTypeList( new StringType( 'test-1' ), new StringType( 'test-2' ) );
@@ -407,5 +417,37 @@ class StringTypeListTest extends TestCase
 		$this->expectExceptionObject( new InvalidStringTypeListException( 'Invalid value in ' . NoTwoStringTypeList::class ) );
 
 		new NoTwoStringTypeList( new StringType( 'test-2' ) );
+	}
+
+	public function testThrowsExceptionIfKeysAreUsed(): void
+	{
+		$this->expectExceptionObject(
+			new InvalidStringTypeListException( 'Invalid index in ' . StringTypeList::class )
+		);
+
+		new StringTypeList( ...[ 'foo' => new StringType( 'bar' ) ] );
+	}
+
+	public function testToNativeType(): void
+	{
+		$type1 = new StringType( 'test-1' );
+		$type2 = new StringType( 'test-2' );
+		$list  = new StringTypeList( $type1, $type2 );
+
+		self::assertSame( [ $type1, $type2 ], $list->toNativeType() );
+	}
+
+	public function testToStrings(): void
+	{
+		$list = new StringTypeList( new StringType( 'test-1' ), new StringType( 'test-2' ) );
+
+		self::assertSame( [ 'test-1', 'test-2' ], $list->toStrings() );
+	}
+
+	public function testIterateStrings(): void
+	{
+		$list = new StringTypeList( new StringType( 'test-1' ), new StringType( 'test-2' ) );
+
+		self::assertSame( [ 'test-1', 'test-2' ], iterator_to_array( $list->iterateStrings() ) );
 	}
 }

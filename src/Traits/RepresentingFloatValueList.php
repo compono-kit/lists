@@ -56,11 +56,6 @@ trait RepresentingFloatValueList
 
 		foreach ( $list as $index => $value )
 		{
-			if ( !isset( $this->floats[ $index ] ) )
-			{
-				return false;
-			}
-
 			if ( $value !== $this->get( $index ) )
 			{
 				return false;

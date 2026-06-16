@@ -57,11 +57,6 @@ trait RepresentingBooleanTypeList
 
 		foreach ( $list as $index => $type )
 		{
-			if ( !isset( $this->booleanTypes[ $index ] ) )
-			{
-				return false;
-			}
-
 			if ( !$type->equals( $this->booleanTypes[ $index ] ) )
 			{
 				return false;

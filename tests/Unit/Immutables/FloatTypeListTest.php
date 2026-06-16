@@ -353,6 +353,16 @@ class FloatTypeListTest extends TestCase
 		self::assertSame( [ 1.1, 2.2 ], $decoded );
 	}
 
+	public function testToJsonPretty(): void
+	{
+		$list = new FloatTypeList( new FloatType( 1.1 ), new FloatType( 2.2 ) );
+
+		$json = $list->toJson( true );
+
+		self::assertStringContainsString( "\n", $json );
+		self::assertSame( [ 1.1, 2.2 ], json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
+	}
+
 	public function testJsonSerialize(): void
 	{
 		$list = new FloatTypeList( new FloatType( 1.1 ), new FloatType( 2.2 ) );
@@ -412,5 +422,37 @@ class FloatTypeListTest extends TestCase
 		);
 
 		new NoTwoFloatTypeList( new FloatType( 2.0 ) );
+	}
+
+	public function testThrowsExceptionIfKeysAreUsed(): void
+	{
+		$this->expectExceptionObject(
+			new InvalidFloatTypeListException( 'Invalid index in ' . FloatTypeList::class )
+		);
+
+		new FloatTypeList( ...[ 'foo' => new FloatType( 3.0 ) ] );
+	}
+
+	public function testToNativeType(): void
+	{
+		$type1 = new FloatType( 1.1 );
+		$type2 = new FloatType( 2.2 );
+		$list  = new FloatTypeList( $type1, $type2 );
+
+		self::assertSame( [ $type1, $type2 ], $list->toNativeType() );
+	}
+
+	public function testToFloats(): void
+	{
+		$list = new FloatTypeList( new FloatType( 1.1 ), new FloatType( 2.2 ) );
+
+		self::assertSame( [ 1.1, 2.2 ], $list->toFloats() );
+	}
+
+	public function testIterateFloats(): void
+	{
+		$list = new FloatTypeList( new FloatType( 1.1 ), new FloatType( 2.2 ) );
+
+		self::assertSame( [ 1.1, 2.2 ], iterator_to_array( $list->iterateFloats() ) );
 	}
 }
