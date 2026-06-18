@@ -407,4 +407,13 @@ class BooleanValueListTest extends TestCase
 
 		new BooleanValueList( ...[ 'foo' => true ] );
 	}
+
+	public function testThrowsExceptionIfValueIsInvalidd(): void
+	{
+		$this->expectExceptionObject(
+			new InvalidBooleanValueListException( 'Invalid value in ' . BooleanValueList::class )
+		);
+
+		new OnlyTrueBooleanValueList( false );
+	}
 }
