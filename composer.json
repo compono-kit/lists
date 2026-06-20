@@ -12,27 +12,13 @@
 	],
 	"require": {
 		"php": ">=8.0",
-		"compono-kit/lists-interfaces": "dev-main"
+		"compono-kit/lists-interfaces": "^1.0.0"
 	},
 	"require-dev": {
 		"ext-intl": "*",
 		"phpunit/phpunit": "^9.0.0",
-		"compono-kit/types-interfaces": "dev-main",
-		"compono-kit/types": "dev-feature/8.0"
-	},
-	"repositories": {
-		"compono-kit/lists-interfaces": {
-			"type": "vcs",
-			"url": "git@github.com:compono-kit/lists-interfaces.git"
-		},
-		"compono-kit/types-interfaces": {
-			"type": "vcs",
-			"url": "git@github.com:compono-kit/types-interfaces.git"
-		},
-		"compono-kit/types": {
-			"type": "vcs",
-			"url": "git@github.com:compono-kit/types.git"
-		}
+		"compono-kit/types-interfaces": "^1.0.0",
+		"compono-kit/types": "^1.0.0"
 	},
 	"autoload": {
 		"psr-4": {
