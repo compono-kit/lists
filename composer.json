@@ -3,7 +3,7 @@
 	"description": "Implementations of compono-kit/lists-interfaces",
 	"minimum-stability": "dev",
 	"prefer-stable": true,
-	"license": "proprietary",
+	"license": "MIT",
 	"authors": [
 		{
 			"name": "Benjamin Bruska",
