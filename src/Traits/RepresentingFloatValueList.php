@@ -5,6 +5,7 @@ namespace ComponoKit\Types\Lists\Traits;
 use ComponoKit\Types\Interfaces\RepresentsType;
 use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Interfaces\MatchesValue;
+use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsFloatValueList;
 
 trait RepresentingFloatValueList
@@ -31,7 +32,12 @@ trait RepresentingFloatValueList
 
 	public function equals( RepresentsType $type ): bool
 	{
-		if ( get_class( $this ) !== get_class( $type ) )
+		if ( $this::class !== $type::class )
+		{
+			return false;
+		}
+
+		if ( $this->count() !== $type->count() )
 		{
 			return false;
 		}
@@ -39,11 +45,6 @@ trait RepresentingFloatValueList
 		/**
 		 * @var RepresentsFloatValueList $type
 		 */
-		if ( $this->count() !== $type->count() )
-		{
-			return false;
-		}
-
 		return $this->equalsValues( $type );
 	}
 
@@ -73,11 +74,6 @@ trait RepresentingFloatValueList
 		return $this->floats;
 	}
 
-	public function current(): float
-	{
-		return current( $this->floats );
-	}
-
 	public function next(): void
 	{
 		next( $this->floats );
@@ -90,7 +86,7 @@ trait RepresentingFloatValueList
 
 	public function valid(): bool
 	{
-		return isset( $this->floats[ $this->key() ] );
+		return null !== key( $this->floats );
 	}
 
 	public function rewind(): void
@@ -98,19 +94,40 @@ trait RepresentingFloatValueList
 		reset( $this->floats );
 	}
 
+	public function current(): float
+	{
+		$index = key( $this->floats );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'Current index does not exist' );
+		}
+
+		return $this->floats[ $index ];
+	}
+
 	public function first(): float
 	{
-		return $this->floats[ array_keys( $this->floats )[0] ];
+		$index = array_key_first( $this->floats );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'List is empty' );
+		}
+
+		return $this->floats[ $index ];
 	}
 
 	public function last(): float
 	{
-		return $this->floats[ array_keys( $this->floats )[ count( $this->floats ) - 1 ] ];
-	}
+		$index = array_key_last( $this->floats );
 
-	public function count(): int
-	{
-		return count( $this->floats );
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'List is empty' );
+		}
+
+		return $this->floats[ $index ];
 	}
 
 	public function findIndex( MatchesValue $matcher ): ?int
@@ -124,6 +141,11 @@ trait RepresentingFloatValueList
 		}
 
 		return null;
+	}
+
+	public function count(): int
+	{
+		return count( $this->floats );
 	}
 
 	public function toJson( bool $pretty = false ): string
@@ -148,5 +170,18 @@ trait RepresentingFloatValueList
 		{
 			throw new MissingIndexException( 'Index does not exist: ' . $index );
 		}
+	}
+
+	private function existsIn( float $valueToCheck, RepresentsList $list ): bool
+	{
+		foreach ( $list as $item )
+		{
+			if ( $item === $valueToCheck )
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

@@ -9,7 +9,6 @@ use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableIntegerTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsIntegerTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsIntegerValueList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Traits\RepresentingIntegerTypeList;
 
 abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerTypeList
@@ -56,12 +55,12 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 		return new static( ...$types );
 	}
 
-	public function append( RepresentsInteger...$types ): static
+	public function append( RepresentsInteger ...$types ): static
 	{
 		return new static( ...$this->integerTypes, ...$types );
 	}
 
-	public function prepend( RepresentsInteger...$types ): static
+	public function prepend( RepresentsInteger ...$types ): static
 	{
 		return new static( ...$types, ...$this->integerTypes );
 	}
@@ -107,48 +106,40 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 	public function sort( ComparesTypes $comparer ): static
 	{
 		$types = $this->integerTypes;
-		usort(
-			$types,
-			function ( RepresentsInteger $firstType, RepresentsInteger $secondType ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstType, $secondType );
-			}
-		);
+		usort( $types, $comparer->compare( ... ) );
 
 		return new static( ...$types );
 	}
 
 	public function diff( RepresentsIntegerTypeList $list ): static
 	{
-		return new static(
-			...array_udiff(
-				$this->integerTypes,
-				$list->toNativeType(),
-				function ( RepresentsInteger $firstType, RepresentsInteger $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$types = [];
+		foreach ( $this->integerTypes as $type )
+		{
+			if ( !$this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	public function intersect( RepresentsIntegerTypeList $list ): static
 	{
-		return new static(
-			...array_uintersect(
-				$this->integerTypes,
-				$list->toNativeType(),
-				function ( RepresentsInteger $firstType, RepresentsInteger $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$types = [];
+		foreach ( $this->integerTypes as $type )
+		{
+			if ( $this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
@@ -170,26 +161,13 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 		{
 			if ( !is_int( $index ) )
 			{
-				throw (new InvalidIntegerTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw new InvalidIntegerTypeListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 
 			if ( !static::isValueValid( $type ) )
 			{
-				throw (new InvalidIntegerTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $type, ] );
+				throw new InvalidIntegerTypeListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
-	}
-
-	private function existsIn( RepresentsInteger $typeToCheck, RepresentsList $list ): bool
-	{
-		foreach ( $list as $type )
-		{
-			if ( $type->equals( $typeToCheck ) )
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 }

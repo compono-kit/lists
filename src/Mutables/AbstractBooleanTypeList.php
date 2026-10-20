@@ -21,37 +21,73 @@ abstract class AbstractBooleanTypeList implements RepresentsMutableBooleanTypeLi
 
 	abstract protected static function isValueValid( RepresentsBoolean $type ): bool;
 
-	public function diff( RepresentsBooleanTypeList $list ): RepresentsBooleanTypeList
+	public function replace( int $index, RepresentsBoolean $type ): void
 	{
-		return new static(
-			...array_udiff(
-				$this->booleanTypes,
-				$list->toNativeType(),
-				function ( RepresentsBoolean $firstType, RepresentsBoolean $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$this->guardIndexExists( $index );
+		$this->validate( $type );
+
+		$this->booleanTypes[ $index ] = $type;
 	}
 
-	public function intersect( RepresentsBooleanTypeList $list ): RepresentsBooleanTypeList
+	public function append( RepresentsBoolean ...$types ): void
 	{
-		return new static(
-			...array_uintersect(
-				$this->booleanTypes,
-				$list->toNativeType(),
-				function ( RepresentsBoolean $firstType, RepresentsBoolean $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$this->validate( ...$types );
+
+		array_push( $this->booleanTypes, ...$types );
+	}
+
+	public function prepend( RepresentsBoolean ...$types ): void
+	{
+		$this->validate( ...$types );
+
+		array_unshift( $this->booleanTypes, ...$types );
+	}
+
+	public function appendList( RepresentsBooleanTypeList $list ): void
+	{
+		$types = $list->toNativeType();
+		$this->validate( ...$types );
+
+		array_push( $this->booleanTypes, ...$types );
+	}
+
+	public function prependList( RepresentsBooleanTypeList $list ): void
+	{
+		$types = $list->toNativeType();
+		$this->validate( ...$types );
+
+		array_unshift( $this->booleanTypes, ...$types );
+	}
+
+	public function diff( RepresentsBooleanTypeList $list ): static
+	{
+		$types = [];
+		foreach ( $this->booleanTypes as $type )
+		{
+			if ( !$this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
+	}
+
+	public function intersect( RepresentsBooleanTypeList $list ): static
+	{
+		$types = [];
+		foreach ( $this->booleanTypes as $type )
+		{
+			if ( $this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, RepresentsBooleanTypeList>
 	 */
 	public function split( int $count ): \Iterator
@@ -73,7 +109,7 @@ abstract class AbstractBooleanTypeList implements RepresentsMutableBooleanTypeLi
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $type ) )
 			{
-				throw (new InvalidBooleanTypeListException( 'Invalid ' . static::class ))->setContext( [ 'value' => $type, ] );
+				throw new InvalidBooleanTypeListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
 	}

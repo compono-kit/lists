@@ -7,7 +7,6 @@ use ComponoKit\Types\Lists\Interfaces\ComparesValues;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableIntegerValueList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsIntegerTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsIntegerValueList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Traits\RepresentingIntegerValueList;
 
 abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerValueList
@@ -51,24 +50,24 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 		return new static( ...$values );
 	}
 
-	public function append( int...$values ): static
+	public function append( int ...$values ): static
 	{
 		return new static( ...$this->integers, ...$values );
 	}
 
-	public function prepend( int...$values ): static
+	public function prepend( int ...$values ): static
 	{
 		return new static( ...$values, ...$this->integers );
 	}
 
 	public function appendList( RepresentsIntegerValueList|RepresentsIntegerTypeList $list ): static
 	{
-		return new static( ...$this->toNativeType(), ...$list->toNativeType() );
+		return new static( ...$this->toNativeType(), ...($list instanceof RepresentsIntegerTypeList ? $list->toIntegers() : $list->toNativeType()) );
 	}
 
 	public function prependList( RepresentsIntegerValueList|RepresentsIntegerTypeList $list ): static
 	{
-		return new static( ...$list->toNativeType(), ...$this->toNativeType() );
+		return new static( ...($list instanceof RepresentsIntegerTypeList ? $list->toIntegers() : $list->toNativeType()), ...$this->toNativeType() );
 	}
 
 	public function reverse(): static
@@ -102,48 +101,40 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 	public function sort( ComparesValues $comparer ): static
 	{
 		$values = $this->integers;
-		usort(
-			$values,
-			function ( int $firstValue, int $secondValue ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstValue, $secondValue );
-			}
-		);
+		usort( $values, $comparer->compare( ... ) );
 
 		return new static( ...$values );
 	}
 
 	public function diff( RepresentsIntegerValueList $list ): static
 	{
-		return new static(
-			...array_udiff(
-				$this->integers,
-				$list->toNativeType(),
-				function ( int $firstType, int $secondType ): int
-				{
-					return $firstType === $secondType ? 0 : 1;
-				}
-			)
-		);
+		$values = [];
+		foreach ( $this->integers as $value )
+		{
+			if ( !$this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
 	}
 
 	public function intersect( RepresentsIntegerValueList $list ): static
 	{
-		return new static(
-			...array_uintersect(
-				$this->integers,
-				$list->toNativeType(),
-				function ( int $firstType, int $secondType ): int
-				{
-					return $firstType === $secondType ? 0 : 1;
-				}
-			)
-		);
+		$values = [];
+		foreach ( $this->integers as $value )
+		{
+			if ( $this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
@@ -165,26 +156,13 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 		{
 			if ( !is_int( $index ) )
 			{
-				throw (new InvalidIntegerValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw new InvalidIntegerValueListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 
 			if ( !static::isValueValid( $value ) )
 			{
-				throw (new InvalidIntegerValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $value, ] );
+				throw new InvalidIntegerValueListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
-	}
-
-	private function existsIn( int $valueToCheck, RepresentsList $list ): bool
-	{
-		foreach ( $list as $value )
-		{
-			if ( $value === $valueToCheck )
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 }

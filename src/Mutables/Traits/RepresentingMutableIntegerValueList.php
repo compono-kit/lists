@@ -3,8 +3,6 @@
 namespace ComponoKit\Types\Lists\Mutables\Traits;
 
 use ComponoKit\Types\Lists\Interfaces\ComparesValues;
-use ComponoKit\Types\Lists\Interfaces\RepresentsIntegerTypeList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsIntegerValueList;
 use ComponoKit\Types\Lists\Traits\RepresentingIntegerValueList;
 
 trait RepresentingMutableIntegerValueList
@@ -16,33 +14,6 @@ trait RepresentingMutableIntegerValueList
 		$this->guardIndexExists( $index );
 
 		array_splice( $this->integers, $index, 1 );
-	}
-
-	public function replace( int $index, int $value ): void
-	{
-		$this->guardIndexExists( $index );
-
-		$this->integers[ $index ] = $value;
-	}
-
-	public function append( int...$values ): void
-	{
-		array_push( $this->integers, ...$values );
-	}
-
-	public function prepend( int...$values ): void
-	{
-		array_unshift( $this->integers, ...$values );
-	}
-
-	public function appendList( RepresentsIntegerValueList|RepresentsIntegerTypeList $list ): void
-	{
-		array_push( $this->integers, ...($list instanceof RepresentsIntegerTypeList ? $list->toIntegers() : $list->toNativeType()) );
-	}
-
-	public function prependList( RepresentsIntegerValueList|RepresentsIntegerTypeList $list ): void
-	{
-		array_unshift( $this->integers, ...($list instanceof RepresentsIntegerTypeList ? $list->toIntegers() : $list->toNativeType()) );
 	}
 
 	public function reverse(): void
@@ -57,17 +28,26 @@ trait RepresentingMutableIntegerValueList
 
 	public function unique(): void
 	{
-		$this->integers = array_values( array_unique( $this->integers ) );
+		$uniqueValues = [];
+
+		foreach ( $this->integers as $value )
+		{
+			foreach ( $uniqueValues as $uniqueValue )
+			{
+				if ( $uniqueValue === $value )
+				{
+					continue 2;
+				}
+			}
+
+			$uniqueValues[] = $value;
+		}
+
+		$this->integers = $uniqueValues;
 	}
 
 	public function sort( ComparesValues $comparer ): void
 	{
-		usort(
-			$this->integers,
-			function ( int $firstValue, int $secondValue ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstValue, $secondValue );
-			}
-		);
+		usort( $this->integers, $comparer->compare( ... ) );
 	}
 }

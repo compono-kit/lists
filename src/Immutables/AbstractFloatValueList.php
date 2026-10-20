@@ -7,7 +7,6 @@ use ComponoKit\Types\Lists\Interfaces\ComparesValues;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableFloatValueList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsFloatTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsFloatValueList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Traits\RepresentingFloatValueList;
 
 abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueList
@@ -51,24 +50,24 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 		return new static( ...$values );
 	}
 
-	public function append( float...$values ): static
+	public function append( float ...$values ): static
 	{
 		return new static( ...$this->floats, ...$values );
 	}
 
-	public function prepend( float...$values ): static
+	public function prepend( float ...$values ): static
 	{
 		return new static( ...$values, ...$this->floats );
 	}
 
 	public function appendList( RepresentsFloatValueList|RepresentsFloatTypeList $list ): static
 	{
-		return new static( ...$this->toNativeType(), ...$list->toNativeType() );
+		return new static( ...$this->toNativeType(), ...($list instanceof RepresentsFloatTypeList ? $list->toFloats() : $list->toNativeType()) );
 	}
 
 	public function prependList( RepresentsFloatValueList|RepresentsFloatTypeList $list ): static
 	{
-		return new static( ...$list->toNativeType(), ...$this->toNativeType() );
+		return new static( ...($list instanceof RepresentsFloatTypeList ? $list->toFloats() : $list->toNativeType()), ...$this->toNativeType() );
 	}
 
 	public function reverse(): static
@@ -102,48 +101,40 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 	public function sort( ComparesValues $comparer ): static
 	{
 		$values = $this->floats;
-		usort(
-			$values,
-			function ( float $firstValue, float $secondValue ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstValue, $secondValue );
-			}
-		);
+		usort( $values, $comparer->compare( ... ) );
 
 		return new static( ...$values );
 	}
 
 	public function diff( RepresentsFloatValueList $list ): static
 	{
-		return new static(
-			...array_udiff(
-				$this->floats,
-				$list->toNativeType(),
-				function ( float $firstType, float $secondType ): int
-				{
-					return $firstType === $secondType ? 0 : 1;
-				}
-			)
-		);
+		$values = [];
+		foreach ( $this->floats as $value )
+		{
+			if ( !$this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
 	}
 
 	public function intersect( RepresentsFloatValueList $list ): static
 	{
-		return new static(
-			...array_uintersect(
-				$this->floats,
-				$list->toNativeType(),
-				function ( float $firstType, float $secondType ): int
-				{
-					return $firstType === $secondType ? 0 : 1;
-				}
-			)
-		);
+		$values = [];
+		foreach ( $this->floats as $value )
+		{
+			if ( $this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
@@ -165,26 +156,13 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 		{
 			if ( !is_int( $index ) )
 			{
-				throw (new InvalidFloatValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw new InvalidFloatValueListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 
 			if ( !static::isValueValid( $value ) )
 			{
-				throw (new InvalidFloatValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $value, ] );
+				throw new InvalidFloatValueListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
-	}
-
-	private function existsIn( float $valueToCheck, RepresentsList $list ): bool
-	{
-		foreach ( $list as $value )
-		{
-			if ( $value === $valueToCheck )
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 }

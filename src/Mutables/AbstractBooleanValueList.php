@@ -4,6 +4,7 @@ namespace ComponoKit\Types\Lists\Mutables;
 
 use ComponoKit\Types\Lists\Exceptions\InvalidBooleanValueListException;
 use ComponoKit\Types\Lists\Interfaces\Mutables\RepresentsMutableBooleanValueList;
+use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanValueList;
 use ComponoKit\Types\Lists\Mutables\Traits\RepresentingMutableBooleanValueList;
 
@@ -28,44 +29,80 @@ abstract class AbstractBooleanValueList implements RepresentsMutableBooleanValue
 		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
-	public function diff( RepresentsBooleanValueList $list ): RepresentsBooleanValueList
+	public function replace( int $index, bool $value ): void
 	{
-		return new static(
-			...array_udiff(
-				$this->booleans,
-				$list->toNativeType(),
-				function ( bool $firstValue, bool $secondValue ): int
-				{
-					return $firstValue === $secondValue ? 0 : 1;
-				}
-			)
-		);
+		$this->guardIndexExists( $index );
+		$this->validate( $value );
+
+		$this->booleans[ $index ] = $value;
 	}
 
-	public function intersect( RepresentsBooleanValueList $list ): RepresentsBooleanValueList
+	public function append( bool ...$values ): void
 	{
-		return new static(
-			...array_uintersect(
-				$this->booleans,
-				$list->toNativeType(),
-				function ( bool $firstValue, bool $secondValue ): int
-				{
-					return $firstValue === $secondValue ? 0 : 1;
-				}
-			)
-		);
+		$this->validate( ...$values );
+
+		array_push( $this->booleans, ...$values );
+	}
+
+	public function prepend( bool ...$values ): void
+	{
+		$this->validate( ...$values );
+
+		array_unshift( $this->booleans, ...$values );
+	}
+
+	public function appendList( RepresentsBooleanValueList|RepresentsBooleanTypeList $list ): void
+	{
+		$values = $list instanceof RepresentsBooleanTypeList ? $list->toBooleans() : $list->toNativeType();
+		$this->validate( ...$values );
+
+		array_push( $this->booleans, ...$values );
+	}
+
+	public function prependList( RepresentsBooleanValueList|RepresentsBooleanTypeList $list ): void
+	{
+		$values = $list instanceof RepresentsBooleanTypeList ? $list->toBooleans() : $list->toNativeType();
+		$this->validate( ...$values );
+
+		array_unshift( $this->booleans, ...$values );
+	}
+
+	public function diff( RepresentsBooleanValueList $list ): static
+	{
+		$values = [];
+		foreach ( $this->booleans as $value )
+		{
+			if ( !$this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
+	}
+
+	public function intersect( RepresentsBooleanValueList $list ): static
+	{
+		$values = [];
+		foreach ( $this->booleans as $value )
+		{
+			if ( $this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, RepresentsBooleanValueList>
 	 */
 	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->booleans, $count ) as $types )
+		foreach ( array_chunk( $this->booleans, $count ) as $values )
 		{
-			yield new static( ...$types );
+			yield new static( ...$values );
 		}
 	}
 
@@ -80,7 +117,7 @@ abstract class AbstractBooleanValueList implements RepresentsMutableBooleanValue
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $value ) )
 			{
-				throw (new InvalidBooleanValueListException( 'Invalid ' . static::class ))->setContext( [ 'value' => $value, ] );
+				throw new InvalidBooleanValueListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
 	}

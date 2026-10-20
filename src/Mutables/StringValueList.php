@@ -4,7 +4,7 @@ namespace ComponoKit\Types\Lists\Mutables;
 
 class StringValueList extends AbstractStringValueList
 {
-	public static function isValueValid( string $value ): bool
+	protected static function isValueValid( string $value ): bool
 	{
 		return true;
 	}

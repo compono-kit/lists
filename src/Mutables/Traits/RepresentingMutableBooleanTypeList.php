@@ -2,9 +2,7 @@
 
 namespace ComponoKit\Types\Lists\Mutables\Traits;
 
-use ComponoKit\Types\Interfaces\RepresentsBoolean;
 use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
-use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanTypeList;
 use ComponoKit\Types\Lists\Traits\RepresentingBooleanTypeList;
 
 trait RepresentingMutableBooleanTypeList
@@ -16,33 +14,6 @@ trait RepresentingMutableBooleanTypeList
 		$this->guardIndexExists( $index );
 
 		array_splice( $this->booleanTypes, $index, 1 );
-	}
-
-	public function replace( int $index, RepresentsBoolean $type ): void
-	{
-		$this->guardIndexExists( $index );
-
-		$this->booleanTypes[ $index ] = $type;
-	}
-
-	public function append( RepresentsBoolean...$types ): void
-	{
-		array_push( $this->booleanTypes, ...$types );
-	}
-
-	public function prepend( RepresentsBoolean...$types ): void
-	{
-		array_unshift( $this->booleanTypes, ...$types );
-	}
-
-	public function appendList( RepresentsBooleanTypeList $list ): void
-	{
-		array_push( $this->booleanTypes, ...$list->toNativeType() );
-	}
-
-	public function prependList( RepresentsBooleanTypeList $list ): void
-	{
-		array_unshift( $this->booleanTypes, ...$list->toNativeType() );
 	}
 
 	public function reverse(): void
@@ -57,18 +28,19 @@ trait RepresentingMutableBooleanTypeList
 
 	public function unique(): void
 	{
-		$existingTypes = [];
-		$uniqueTypes   = [];
+		$uniqueTypes = [];
 
 		foreach ( $this->booleanTypes as $type )
 		{
-			$key = $type->toNativeType();
-
-			if ( !isset( $existingTypes[ $key ] ) )
+			foreach ( $uniqueTypes as $uniqueType )
 			{
-				$existingTypes[ $key ] = true;
-				$uniqueTypes[]         = $type;
+				if ( $uniqueType->equals( $type ) )
+				{
+					continue 2;
+				}
 			}
+
+			$uniqueTypes[] = $type;
 		}
 
 		$this->booleanTypes = $uniqueTypes;
@@ -76,12 +48,6 @@ trait RepresentingMutableBooleanTypeList
 
 	public function sort( ComparesTypes $comparer ): void
 	{
-		usort(
-			$this->booleanTypes,
-			function ( RepresentsBoolean $firstType, RepresentsBoolean $secondType ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstType, $secondType );
-			}
-		);
+		usort( $this->booleanTypes, $comparer->compare( ... ) );
 	}
 }

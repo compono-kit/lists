@@ -13,6 +13,7 @@ use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableStringTypeLi
 use ComponoKit\Types\Lists\Interfaces\MatchesType;
 use ComponoKit\Types\Lists\Tests\Unit\Immutables\fakes\NoTwoStringTypeList;
 use ComponoKit\Types\StringType;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class StringTypeListTest extends TestCase
@@ -44,9 +45,7 @@ class StringTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider EqualsDataProvider
-	 */
+	#[DataProvider( 'EqualsDataProvider' )]
 	public function testEquals( RepresentsImmutableStringTypeList $originalList, RepresentsImmutableStringTypeList $actualList, bool $expected ): void
 	{
 		self::assertSame( $expected, $originalList->equals( $actualList ) );
@@ -79,9 +78,7 @@ class StringTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider EqualsValuesDataProvider
-	 */
+	#[DataProvider( 'EqualsValuesDataProvider' )]
 	public function testEqualsValues( array $values1, array $values2, bool $expected ): void
 	{
 		$originalList = new StringTypeList( ...$values1 );
@@ -163,8 +160,9 @@ class StringTypeListTest extends TestCase
 
 		self::assertNotSame( $originalList, $actualList );
 		self::assertCount( 2, $actualList );
-		self::assertEquals( new StringType( 'test-1' ), $originalList->get( 0 ) );
-		self::assertEquals( new StringType( 'test-2' ), $originalList->get( 1 ) );
+		self::assertEquals( new StringType( 'test-1' ), $actualList->get( 0 ) );
+		self::assertEquals( new StringType( 'test-2' ), $actualList->get( 1 ) );
+		self::assertCount( 3, $originalList );
 	}
 
 	public function testDiff(): void
@@ -265,9 +263,7 @@ class StringTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider ReplaceDataProvider
-	 */
+	#[DataProvider( 'ReplaceDataProvider' )]
 	public function testReplace( array $values, int $index, string $expected ): void
 	{
 		$originalList = new StringTypeList( ...$values );
@@ -302,9 +298,7 @@ class StringTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider ExistsDataProvider
-	 */
+	#[DataProvider( 'ExistsDataProvider' )]
 	public function testExists( array $values, int $index, bool $expected ): void
 	{
 		$list = new StringTypeList( ...$values );

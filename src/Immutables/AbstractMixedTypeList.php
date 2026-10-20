@@ -7,7 +7,6 @@ use ComponoKit\Types\Interfaces\RepresentsType;
 use ComponoKit\Types\Lists\Exceptions\InvalidMixedTypeListException;
 use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableMixedTypeList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedValueList;
 use ComponoKit\Types\Lists\Traits\RepresentingMixedTypeList;
@@ -107,48 +106,40 @@ abstract class AbstractMixedTypeList implements RepresentsImmutableMixedTypeList
 	public function sort( ComparesTypes $comparer ): static
 	{
 		$types = $this->mixedTypes;
-		usort(
-			$types,
-			function ( RepresentsType $firstType, RepresentsType $secondType ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstType, $secondType );
-			}
-		);
+		usort( $types, $comparer->compare( ... ) );
 
 		return new static( ...$types );
 	}
 
 	public function diff( RepresentsMixedTypeList $list ): static
 	{
-		return new static(
-			...array_udiff(
-				$this->mixedTypes,
-				$list->toNativeType(),
-				function ( RepresentsType $firstType, RepresentsType $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$types = [];
+		foreach ( $this->mixedTypes as $type )
+		{
+			if ( !$this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	public function intersect( RepresentsMixedTypeList $list ): static
 	{
-		return new static(
-			...array_uintersect(
-				$this->mixedTypes,
-				$list->toNativeType(),
-				function ( RepresentsType $firstType, RepresentsType $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$types = [];
+		foreach ( $this->mixedTypes as $type )
+		{
+			if ( $this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
@@ -170,26 +161,13 @@ abstract class AbstractMixedTypeList implements RepresentsImmutableMixedTypeList
 		{
 			if ( !is_int( $index ) )
 			{
-				throw (new InvalidMixedTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw new InvalidMixedTypeListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 
 			if ( !static::isValueValid( $type ) )
 			{
-				throw (new InvalidMixedTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $type, ] );
+				throw new InvalidMixedTypeListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
-	}
-
-	private function existsIn( RepresentsType $typeToCheck, RepresentsList $list ): bool
-	{
-		foreach ( $list as $type )
-		{
-			if ( $type->equals( $typeToCheck ) )
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 }

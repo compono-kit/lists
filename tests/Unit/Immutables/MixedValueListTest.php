@@ -9,6 +9,7 @@ use ComponoKit\Types\Lists\Interfaces\ComparesValues;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableMixedValueList;
 use ComponoKit\Types\Lists\Interfaces\MatchesValue;
 use ComponoKit\Types\Lists\Tests\Unit\Immutables\fakes\NoIntegerMixedValueList;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class MixedValueListTest extends TestCase
@@ -40,9 +41,7 @@ class MixedValueListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider EqualsDataProvider
-	 */
+	#[DataProvider( 'EqualsDataProvider' )]
 	public function testEquals( RepresentsImmutableMixedValueList $originalList, RepresentsImmutableMixedValueList $actualList, bool $expected ): void
 	{
 		self::assertSame( $expected, $originalList->equals( $actualList ) );
@@ -75,9 +74,7 @@ class MixedValueListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider EqualsValuesDataProvider
-	 */
+	#[DataProvider( 'EqualsValuesDataProvider' )]
 	public function testEqualsValues( array $values1, array $values2, bool $expected ): void
 	{
 		$originalList = new MixedValueList( ...$values1 );
@@ -255,9 +252,7 @@ class MixedValueListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider ReplaceDataProvider
-	 */
+	#[DataProvider( 'ReplaceDataProvider' )]
 	public function testReplace( array $values, int $index, string $expected ): void
 	{
 		$originalList = new MixedValueList( ...$values );
@@ -290,9 +285,7 @@ class MixedValueListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider ExistsDataProvider
-	 */
+	#[DataProvider( 'ExistsDataProvider' )]
 	public function testExists( array $values, int $index, bool $expected ): void
 	{
 		$list = new MixedValueList( ...$values );

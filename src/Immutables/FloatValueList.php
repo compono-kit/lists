@@ -4,7 +4,7 @@ namespace ComponoKit\Types\Lists\Immutables;
 
 class FloatValueList extends AbstractFloatValueList
 {
-	public static function isValueValid( float $value ): bool
+	protected static function isValueValid( float $value ): bool
 	{
 		return true;
 	}

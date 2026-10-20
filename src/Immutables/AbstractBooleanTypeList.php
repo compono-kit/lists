@@ -9,7 +9,6 @@ use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableBooleanTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanValueList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Traits\RepresentingBooleanTypeList;
 
 abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanTypeList
@@ -56,12 +55,12 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 		return new static( ...$types );
 	}
 
-	public function append( RepresentsBoolean...$types ): static
+	public function append( RepresentsBoolean ...$types ): static
 	{
 		return new static( ...$this->booleanTypes, ...$types );
 	}
 
-	public function prepend( RepresentsBoolean...$types ): static
+	public function prepend( RepresentsBoolean ...$types ): static
 	{
 		return new static( ...$types, ...$this->booleanTypes );
 	}
@@ -107,48 +106,40 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 	public function sort( ComparesTypes $comparer ): static
 	{
 		$types = $this->booleanTypes;
-		usort(
-			$types,
-			function ( RepresentsBoolean $firstType, RepresentsBoolean $secondType ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstType, $secondType );
-			}
-		);
+		usort( $types, $comparer->compare( ... ) );
 
 		return new static( ...$types );
 	}
 
 	public function diff( RepresentsBooleanTypeList $list ): static
 	{
-		return new static(
-			...array_udiff(
-				$this->booleanTypes,
-				$list->toNativeType(),
-				function ( RepresentsBoolean $firstType, RepresentsBoolean $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$types = [];
+		foreach ( $this->booleanTypes as $type )
+		{
+			if ( !$this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	public function intersect( RepresentsBooleanTypeList $list ): static
 	{
-		return new static(
-			...array_uintersect(
-				$this->booleanTypes,
-				$list->toNativeType(),
-				function ( RepresentsBoolean $firstType, RepresentsBoolean $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$types = [];
+		foreach ( $this->booleanTypes as $type )
+		{
+			if ( $this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
@@ -170,26 +161,13 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 		{
 			if ( !is_int( $index ) )
 			{
-				throw (new InvalidBooleanTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw new InvalidBooleanTypeListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 
 			if ( !static::isValueValid( $type ) )
 			{
-				throw (new InvalidBooleanTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $type, ] );
+				throw new InvalidBooleanTypeListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
-	}
-
-	private function existsIn( RepresentsBoolean $typeToCheck, RepresentsList $list ): bool
-	{
-		foreach ( $list as $type )
-		{
-			if ( $type->equals( $typeToCheck ) )
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 }

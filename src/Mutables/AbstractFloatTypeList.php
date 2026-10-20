@@ -21,37 +21,73 @@ abstract class AbstractFloatTypeList implements RepresentsMutableFloatTypeList
 
 	abstract protected static function isValueValid( RepresentsFloat $type ): bool;
 
-	public function diff( RepresentsFloatTypeList $list ): RepresentsFloatTypeList
+	public function replace( int $index, RepresentsFloat $type ): void
 	{
-		return new static(
-			...array_udiff(
-				$this->floatTypes,
-				$list->toNativeType(),
-				function ( RepresentsFloat $firstType, RepresentsFloat $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$this->guardIndexExists( $index );
+		$this->validate( $type );
+
+		$this->floatTypes[ $index ] = $type;
 	}
 
-	public function intersect( RepresentsFloatTypeList $list ): RepresentsFloatTypeList
+	public function append( RepresentsFloat ...$types ): void
 	{
-		return new static(
-			...array_uintersect(
-				$this->floatTypes,
-				$list->toNativeType(),
-				function ( RepresentsFloat $firstType, RepresentsFloat $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$this->validate( ...$types );
+
+		array_push( $this->floatTypes, ...$types );
+	}
+
+	public function prepend( RepresentsFloat ...$types ): void
+	{
+		$this->validate( ...$types );
+
+		array_unshift( $this->floatTypes, ...$types );
+	}
+
+	public function appendList( RepresentsFloatTypeList $list ): void
+	{
+		$types = $list->toNativeType();
+		$this->validate( ...$types );
+
+		array_push( $this->floatTypes, ...$types );
+	}
+
+	public function prependList( RepresentsFloatTypeList $list ): void
+	{
+		$types = $list->toNativeType();
+		$this->validate( ...$types );
+
+		array_unshift( $this->floatTypes, ...$types );
+	}
+
+	public function diff( RepresentsFloatTypeList $list ): static
+	{
+		$types = [];
+		foreach ( $this->floatTypes as $type )
+		{
+			if ( !$this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
+	}
+
+	public function intersect( RepresentsFloatTypeList $list ): static
+	{
+		$types = [];
+		foreach ( $this->floatTypes as $type )
+		{
+			if ( $this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, RepresentsFloatTypeList>
 	 */
 	public function split( int $count ): \Iterator
@@ -73,7 +109,7 @@ abstract class AbstractFloatTypeList implements RepresentsMutableFloatTypeList
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $type ) )
 			{
-				throw (new InvalidFloatTypeListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw new InvalidFloatTypeListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
 	}

@@ -3,8 +3,6 @@
 namespace ComponoKit\Types\Lists\Mutables\Traits;
 
 use ComponoKit\Types\Lists\Interfaces\ComparesValues;
-use ComponoKit\Types\Lists\Interfaces\RepresentsFloatTypeList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsFloatValueList;
 use ComponoKit\Types\Lists\Traits\RepresentingFloatValueList;
 
 trait RepresentingMutableFloatValueList
@@ -16,33 +14,6 @@ trait RepresentingMutableFloatValueList
 		$this->guardIndexExists( $index );
 
 		array_splice( $this->floats, $index, 1 );
-	}
-
-	public function replace( int $index, float $value ): void
-	{
-		$this->guardIndexExists( $index );
-
-		$this->floats[ $index ] = $value;
-	}
-
-	public function append( float...$values ): void
-	{
-		array_push( $this->floats, ...$values );
-	}
-
-	public function prepend( float...$values ): void
-	{
-		array_unshift( $this->floats, ...$values );
-	}
-
-	public function appendList( RepresentsFloatValueList|RepresentsFloatTypeList $list ): void
-	{
-		array_push( $this->floats, ...($list instanceof RepresentsFloatTypeList ? $list->toFloats() : $list->toNativeType()) );
-	}
-
-	public function prependList( RepresentsFloatValueList|RepresentsFloatTypeList $list ): void
-	{
-		array_unshift( $this->floats, ...($list instanceof RepresentsFloatTypeList ? $list->toFloats() : $list->toNativeType()) );
 	}
 
 	public function reverse(): void
@@ -57,17 +28,26 @@ trait RepresentingMutableFloatValueList
 
 	public function unique(): void
 	{
-		$this->floats = array_values( array_unique( $this->floats ) );
+		$uniqueValues = [];
+
+		foreach ( $this->floats as $value )
+		{
+			foreach ( $uniqueValues as $uniqueValue )
+			{
+				if ( $uniqueValue === $value )
+				{
+					continue 2;
+				}
+			}
+
+			$uniqueValues[] = $value;
+		}
+
+		$this->floats = $uniqueValues;
 	}
 
 	public function sort( ComparesValues $comparer ): void
 	{
-		usort(
-			$this->floats,
-			function ( float $firstValue, float $secondValue ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstValue, $secondValue );
-			}
-		);
+		usort( $this->floats, $comparer->compare( ... ) );
 	}
 }

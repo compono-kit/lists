@@ -5,6 +5,7 @@ namespace ComponoKit\Types\Lists\Traits;
 use ComponoKit\Types\Interfaces\RepresentsType;
 use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Interfaces\MatchesValue;
+use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringValueList;
 
 trait RepresentingStringValueList
@@ -31,7 +32,12 @@ trait RepresentingStringValueList
 
 	public function equals( RepresentsType $type ): bool
 	{
-		if ( get_class( $this ) !== get_class( $type ) )
+		if ( $this::class !== $type::class )
+		{
+			return false;
+		}
+
+		if ( $this->count() !== $type->count() )
 		{
 			return false;
 		}
@@ -39,11 +45,6 @@ trait RepresentingStringValueList
 		/**
 		 * @var RepresentsStringValueList $type
 		 */
-		if ( $this->count() !== $type->count() )
-		{
-			return false;
-		}
-
 		return $this->equalsValues( $type );
 	}
 
@@ -73,11 +74,6 @@ trait RepresentingStringValueList
 		return $this->strings;
 	}
 
-	public function current(): string
-	{
-		return current( $this->strings );
-	}
-
 	public function next(): void
 	{
 		next( $this->strings );
@@ -90,7 +86,7 @@ trait RepresentingStringValueList
 
 	public function valid(): bool
 	{
-		return isset( $this->strings[ $this->key() ] );
+		return null !== key( $this->strings );
 	}
 
 	public function rewind(): void
@@ -98,19 +94,40 @@ trait RepresentingStringValueList
 		reset( $this->strings );
 	}
 
+	public function current(): string
+	{
+		$index = key( $this->strings );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'Current index does not exist' );
+		}
+
+		return $this->strings[ $index ];
+	}
+
 	public function first(): string
 	{
-		return $this->strings[ array_keys( $this->strings )[0] ];
+		$index = array_key_first( $this->strings );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'List is empty' );
+		}
+
+		return $this->strings[ $index ];
 	}
 
 	public function last(): string
 	{
-		return $this->strings[ array_keys( $this->strings )[ count( $this->strings ) - 1 ] ];
-	}
+		$index = array_key_last( $this->strings );
 
-	public function count(): int
-	{
-		return count( $this->strings );
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'List is empty' );
+		}
+
+		return $this->strings[ $index ];
 	}
 
 	public function findIndex( MatchesValue $matcher ): ?int
@@ -124,6 +141,11 @@ trait RepresentingStringValueList
 		}
 
 		return null;
+	}
+
+	public function count(): int
+	{
+		return count( $this->strings );
 	}
 
 	public function toJson( bool $pretty = false ): string
@@ -148,5 +170,18 @@ trait RepresentingStringValueList
 		{
 			throw new MissingIndexException( 'Index does not exist: ' . $index );
 		}
+	}
+
+	private function existsIn( string $valueToCheck, RepresentsList $list ): bool
+	{
+		foreach ( $list as $item )
+		{
+			if ( $item === $valueToCheck )
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

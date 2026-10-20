@@ -3,8 +3,6 @@
 namespace ComponoKit\Types\Lists\Mutables\Traits;
 
 use ComponoKit\Types\Lists\Interfaces\ComparesValues;
-use ComponoKit\Types\Lists\Interfaces\RepresentsMixedTypeList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsMixedValueList;
 use ComponoKit\Types\Lists\Traits\RepresentingMixedValueList;
 
 trait RepresentingMutableMixedValueList
@@ -16,33 +14,6 @@ trait RepresentingMutableMixedValueList
 		$this->guardIndexExists( $index );
 
 		array_splice( $this->mixedValues, $index, 1 );
-	}
-
-	public function replace( int $index, int|float|string|bool|array $value ): void
-	{
-		$this->guardIndexExists( $index );
-
-		$this->mixedValues[ $index ] = $value;
-	}
-
-	public function append( int|float|string|bool|array...$values ): void
-	{
-		array_push( $this->mixedValues, ...$values );
-	}
-
-	public function prepend( int|float|string|bool|array...$values ): void
-	{
-		array_unshift( $this->mixedValues, ...$values );
-	}
-
-	public function appendList( RepresentsMixedValueList|RepresentsMixedTypeList $list ): void
-	{
-		array_push( $this->mixedValues, ...($list instanceof RepresentsMixedTypeList ? $list->toNativeTypes() : $list->toNativeType()) );
-	}
-
-	public function prependList( RepresentsMixedValueList|RepresentsMixedTypeList $list ): void
-	{
-		array_unshift( $this->mixedValues, ...($list instanceof RepresentsMixedTypeList ? $list->toNativeTypes() : $list->toNativeType()) );
 	}
 
 	public function reverse(): void
@@ -57,17 +28,26 @@ trait RepresentingMutableMixedValueList
 
 	public function unique(): void
 	{
-		$this->mixedValues = array_values( array_unique( $this->mixedValues ) );
+		$uniqueValues = [];
+
+		foreach ( $this->mixedValues as $value )
+		{
+			foreach ( $uniqueValues as $uniqueValue )
+			{
+				if ( $uniqueValue === $value )
+				{
+					continue 2;
+				}
+			}
+
+			$uniqueValues[] = $value;
+		}
+
+		$this->mixedValues = $uniqueValues;
 	}
 
 	public function sort( ComparesValues $comparer ): void
 	{
-		usort(
-			$this->mixedValues,
-			function ( int|float|string|bool|array $firstValue, int|float|string|bool|array $secondValue ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstValue, $secondValue );
-			}
-		);
+		usort( $this->mixedValues, $comparer->compare( ... ) );
 	}
 }

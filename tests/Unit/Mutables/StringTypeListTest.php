@@ -11,6 +11,7 @@ use ComponoKit\Types\Lists\Interfaces\Mutables\RepresentsMutableStringTypeList;
 use ComponoKit\Types\Lists\Mutables\StringTypeList;
 use ComponoKit\Types\Lists\Tests\Unit\Mutables\fakes\NoTwoStringTypeList;
 use ComponoKit\Types\StringType;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class StringTypeListTest extends TestCase
@@ -42,9 +43,7 @@ class StringTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider EqualsDataProvider
-	 */
+	#[DataProvider( 'EqualsDataProvider' )]
 	public function testEquals( RepresentsMutableStringTypeList $originalList, RepresentsMutableStringTypeList $actualList, bool $expected ): void
 	{
 		self::assertSame( $expected, $originalList->equals( $actualList ) );
@@ -77,9 +76,7 @@ class StringTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider EqualsValuesDataProvider
-	 */
+	#[DataProvider( 'EqualsValuesDataProvider' )]
 	public function testEqualsValues( array $values1, array $values2, bool $expected ): void
 	{
 		$originalList = new StringTypeList( ...$values1 );
@@ -246,9 +243,7 @@ class StringTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider ReplaceDataProvider
-	 */
+	#[DataProvider( 'ReplaceDataProvider' )]
 	public function testReplace( array $values, int $index, string $expected ): void
 	{
 		$list  = new StringTypeList( ...$values );
@@ -282,9 +277,7 @@ class StringTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider ExistsDataProvider
-	 */
+	#[DataProvider( 'ExistsDataProvider' )]
 	public function testExists( array $values, int $index, bool $expected ): void
 	{
 		$list = new StringTypeList( ...$values );

@@ -5,7 +5,6 @@ namespace ComponoKit\Types\Lists\Immutables;
 use ComponoKit\Types\Lists\Exceptions\InvalidStringValueListException;
 use ComponoKit\Types\Lists\Interfaces\ComparesValues;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableStringValueList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringValueList;
 use ComponoKit\Types\Lists\Traits\RepresentingStringValueList;
@@ -51,24 +50,24 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 		return new static( ...$values );
 	}
 
-	public function append( string...$values ): static
+	public function append( string ...$values ): static
 	{
 		return new static( ...$this->strings, ...$values );
 	}
 
-	public function prepend( string...$values ): static
+	public function prepend( string ...$values ): static
 	{
 		return new static( ...$values, ...$this->strings );
 	}
 
 	public function appendList( RepresentsStringValueList|RepresentsStringTypeList $list ): static
 	{
-		return new static( ...$this->toNativeType(), ...$list->toNativeType() );
+		return new static( ...$this->toNativeType(), ...($list instanceof RepresentsStringTypeList ? $list->toStrings() : $list->toNativeType()) );
 	}
 
 	public function prependList( RepresentsStringValueList|RepresentsStringTypeList $list ): static
 	{
-		return new static( ...$list->toNativeType(), ...$this->toNativeType() );
+		return new static( ...($list instanceof RepresentsStringTypeList ? $list->toStrings() : $list->toNativeType()), ...$this->toNativeType() );
 	}
 
 	public function reverse(): static
@@ -102,48 +101,40 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 	public function sort( ComparesValues $comparer ): static
 	{
 		$values = $this->strings;
-		usort(
-			$values,
-			function ( string $firstValue, string $secondValue ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstValue, $secondValue );
-			}
-		);
+		usort( $values, $comparer->compare( ... ) );
 
 		return new static( ...$values );
 	}
 
 	public function diff( RepresentsStringValueList $list ): static
 	{
-		return new static(
-			...array_udiff(
-				$this->strings,
-				$list->toNativeType(),
-				function ( string $firstType, string $secondType ): int
-				{
-					return $firstType === $secondType ? 0 : 1;
-				}
-			)
-		);
+		$values = [];
+		foreach ( $this->strings as $value )
+		{
+			if ( !$this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
 	}
 
 	public function intersect( RepresentsStringValueList $list ): static
 	{
-		return new static(
-			...array_uintersect(
-				$this->strings,
-				$list->toNativeType(),
-				function ( string $firstType, string $secondType ): int
-				{
-					return $firstType === $secondType ? 0 : 1;
-				}
-			)
-		);
+		$values = [];
+		foreach ( $this->strings as $value )
+		{
+			if ( $this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
@@ -165,26 +156,13 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 		{
 			if ( !is_int( $index ) )
 			{
-				throw (new InvalidStringValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw new InvalidStringValueListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 
 			if ( !static::isValueValid( $value ) )
 			{
-				throw (new InvalidStringValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $value, ] );
+				throw new InvalidStringValueListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
-	}
-
-	private function existsIn( string $valueToCheck, RepresentsList $list ): bool
-	{
-		foreach ( $list as $value )
-		{
-			if ( $value === $valueToCheck )
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 }

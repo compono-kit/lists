@@ -2,9 +2,7 @@
 
 namespace ComponoKit\Types\Lists\Mutables\Traits;
 
-use ComponoKit\Types\Interfaces\RepresentsType;
 use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
-use ComponoKit\Types\Lists\Interfaces\RepresentsMixedTypeList;
 use ComponoKit\Types\Lists\Traits\RepresentingMixedTypeList;
 
 trait RepresentingMutableMixedTypeList
@@ -16,33 +14,6 @@ trait RepresentingMutableMixedTypeList
 		$this->guardIndexExists( $index );
 
 		array_splice( $this->mixedTypes, $index, 1 );
-	}
-
-	public function replace( int $index, RepresentsType $type ): void
-	{
-		$this->guardIndexExists( $index );
-
-		$this->mixedTypes[ $index ] = $type;
-	}
-
-	public function append( RepresentsType...$types ): void
-	{
-		array_push( $this->mixedTypes, ...$types );
-	}
-
-	public function prepend( RepresentsType...$types ): void
-	{
-		array_unshift( $this->mixedTypes, ...$types );
-	}
-
-	public function appendList( RepresentsMixedTypeList $list ): void
-	{
-		array_push( $this->mixedTypes, ...$list->toNativeType() );
-	}
-
-	public function prependList( RepresentsMixedTypeList $list ): void
-	{
-		array_unshift( $this->mixedTypes, ...$list->toNativeType() );
 	}
 
 	public function reverse(): void
@@ -57,23 +28,19 @@ trait RepresentingMutableMixedTypeList
 
 	public function unique(): void
 	{
-		$existingTypes = [];
-		$uniqueTypes   = [];
+		$uniqueTypes = [];
 
 		foreach ( $this->mixedTypes as $type )
 		{
-			$key = $type->toNativeType();
-
-			if ( is_array( $key ) )
+			foreach ( $uniqueTypes as $uniqueType )
 			{
-				$key = md5( serialize( $key ) );
+				if ( $uniqueType->equals( $type ) )
+				{
+					continue 2;
+				}
 			}
 
-			if ( !isset( $existingTypes[ $key ] ) )
-			{
-				$existingTypes[ $key ] = true;
-				$uniqueTypes[]         = $type;
-			}
+			$uniqueTypes[] = $type;
 		}
 
 		$this->mixedTypes = $uniqueTypes;
@@ -81,12 +48,6 @@ trait RepresentingMutableMixedTypeList
 
 	public function sort( ComparesTypes $comparer ): void
 	{
-		usort(
-			$this->mixedTypes,
-			function ( RepresentsType $firstType, RepresentsType $secondType ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstType, $secondType );
-			}
-		);
+		usort( $this->mixedTypes, $comparer->compare( ... ) );
 	}
 }

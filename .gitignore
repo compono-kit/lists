@@ -3,3 +3,5 @@
 /vendor/
 /.idea
 /build/logs/
+/.env
+/.phpunit.cache

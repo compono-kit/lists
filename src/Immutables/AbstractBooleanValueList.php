@@ -7,16 +7,12 @@ use ComponoKit\Types\Lists\Interfaces\ComparesValues;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableBooleanValueList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanValueList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Traits\RepresentingBooleanValueList;
 
 abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanValueList
 {
 	use RepresentingBooleanValueList;
 
-	/**
-	 * @param bool[] $booleans
-	 */
 	public function __construct( bool ...$booleans )
 	{
 		$this->validate( ...$booleans );
@@ -54,24 +50,24 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 		return new static( ...$values );
 	}
 
-	public function append( bool...$values ): static
+	public function append( bool ...$values ): static
 	{
 		return new static( ...$this->booleans, ...$values );
 	}
 
-	public function prepend( bool...$values ): static
+	public function prepend( bool ...$values ): static
 	{
 		return new static( ...$values, ...$this->booleans );
 	}
 
 	public function appendList( RepresentsBooleanValueList|RepresentsBooleanTypeList $list ): static
 	{
-		return new static( ...$this->toNativeType(), ...$list->toNativeType() );
+		return new static( ...$this->toNativeType(), ...($list instanceof RepresentsBooleanTypeList ? $list->toBooleans() : $list->toNativeType()) );
 	}
 
 	public function prependList( RepresentsBooleanValueList|RepresentsBooleanTypeList $list ): static
 	{
-		return new static( ...$list->toNativeType(), ...$this->toNativeType() );
+		return new static( ...($list instanceof RepresentsBooleanTypeList ? $list->toBooleans() : $list->toNativeType()), ...$this->toNativeType() );
 	}
 
 	public function reverse(): static
@@ -105,48 +101,40 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 	public function sort( ComparesValues $comparer ): static
 	{
 		$values = $this->booleans;
-		usort(
-			$values,
-			function ( bool $firstValue, bool $secondValue ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstValue, $secondValue );
-			}
-		);
+		usort( $values, $comparer->compare( ... ) );
 
 		return new static( ...$values );
 	}
 
 	public function diff( RepresentsBooleanValueList $list ): static
 	{
-		return new static(
-			...array_udiff(
-				$this->booleans,
-				$list->toNativeType(),
-				function ( bool $firstType, bool $secondType ): int
-				{
-					return $firstType === $secondType ? 0 : 1;
-				}
-			)
-		);
+		$values = [];
+		foreach ( $this->booleans as $value )
+		{
+			if ( !$this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
 	}
 
 	public function intersect( RepresentsBooleanValueList $list ): static
 	{
-		return new static(
-			...array_uintersect(
-				$this->booleans,
-				$list->toNativeType(),
-				function ( bool $firstType, bool $secondType ): int
-				{
-					return $firstType === $secondType ? 0 : 1;
-				}
-			)
-		);
+		$values = [];
+		foreach ( $this->booleans as $value )
+		{
+			if ( $this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
@@ -168,26 +156,13 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 		{
 			if ( !is_int( $index ) )
 			{
-				throw (new InvalidBooleanValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw new InvalidBooleanValueListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 
 			if ( !static::isValueValid( $value ) )
 			{
-				throw (new InvalidBooleanValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $value, ] );
+				throw new InvalidBooleanValueListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
-	}
-
-	private function existsIn( bool $valueToCheck, RepresentsList $list ): bool
-	{
-		foreach ( $list as $value )
-		{
-			if ( $value === $valueToCheck )
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 }

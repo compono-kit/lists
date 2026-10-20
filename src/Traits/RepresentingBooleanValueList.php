@@ -5,6 +5,7 @@ namespace ComponoKit\Types\Lists\Traits;
 use ComponoKit\Types\Interfaces\RepresentsType;
 use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Interfaces\MatchesValue;
+use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanValueList;
 
 trait RepresentingBooleanValueList
@@ -31,7 +32,12 @@ trait RepresentingBooleanValueList
 
 	public function equals( RepresentsType $type ): bool
 	{
-		if ( get_class( $this ) !== get_class( $type ) )
+		if ( $this::class !== $type::class )
+		{
+			return false;
+		}
+
+		if ( $this->count() !== $type->count() )
 		{
 			return false;
 		}
@@ -39,11 +45,6 @@ trait RepresentingBooleanValueList
 		/**
 		 * @var RepresentsBooleanValueList $type
 		 */
-		if ( $this->count() !== $type->count() )
-		{
-			return false;
-		}
-
 		return $this->equalsValues( $type );
 	}
 
@@ -85,12 +86,7 @@ trait RepresentingBooleanValueList
 
 	public function valid(): bool
 	{
-		return isset( $this->booleans[ $this->key() ] );
-	}
-
-	public function current(): bool
-	{
-		return current( $this->booleans );
+		return null !== key( $this->booleans );
 	}
 
 	public function rewind(): void
@@ -98,14 +94,40 @@ trait RepresentingBooleanValueList
 		reset( $this->booleans );
 	}
 
+	public function current(): bool
+	{
+		$index = key( $this->booleans );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'Current index does not exist' );
+		}
+
+		return $this->booleans[ $index ];
+	}
+
 	public function first(): bool
 	{
-		return $this->booleans[ array_keys( $this->booleans )[0] ];
+		$index = array_key_first( $this->booleans );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'List is empty' );
+		}
+
+		return $this->booleans[ $index ];
 	}
 
 	public function last(): bool
 	{
-		return $this->booleans[ array_keys( $this->booleans )[ count( $this->booleans ) - 1 ] ];
+		$index = array_key_last( $this->booleans );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'List is empty' );
+		}
+
+		return $this->booleans[ $index ];
 	}
 
 	public function findIndex( MatchesValue $matcher ): ?int
@@ -144,9 +166,22 @@ trait RepresentingBooleanValueList
 
 	private function guardIndexExists( int $index ): void
 	{
-		if ( !isset( $this->booleans [ $index ] ) )
+		if ( !isset( $this->booleans[ $index ] ) )
 		{
 			throw new MissingIndexException( 'Index does not exist: ' . $index );
 		}
+	}
+
+	private function existsIn( bool $valueToCheck, RepresentsList $list ): bool
+	{
+		foreach ( $list as $item )
+		{
+			if ( $item === $valueToCheck )
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

@@ -3,8 +3,6 @@
 namespace ComponoKit\Types\Lists\Mutables\Traits;
 
 use ComponoKit\Types\Lists\Interfaces\ComparesValues;
-use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanTypeList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsBooleanValueList;
 use ComponoKit\Types\Lists\Traits\RepresentingBooleanValueList;
 
 trait RepresentingMutableBooleanValueList
@@ -16,33 +14,6 @@ trait RepresentingMutableBooleanValueList
 		$this->guardIndexExists( $index );
 
 		array_splice( $this->booleans, $index, 1 );
-	}
-
-	public function replace( int $index, bool $value ): void
-	{
-		$this->guardIndexExists( $index );
-
-		$this->booleans[ $index ] = $value;
-	}
-
-	public function append( bool...$values ): void
-	{
-		array_push( $this->booleans, ...$values );
-	}
-
-	public function prepend( bool...$values ): void
-	{
-		array_unshift( $this->booleans, ...$values );
-	}
-
-	public function appendList( RepresentsBooleanValueList|RepresentsBooleanTypeList $list ): void
-	{
-		array_push( $this->booleans, ...($list instanceof RepresentsBooleanTypeList ? $list->toBooleans() : $list->toNativeType()) );
-	}
-
-	public function prependList( RepresentsBooleanValueList|RepresentsBooleanTypeList $list ): void
-	{
-		array_unshift( $this->booleans, ...($list instanceof RepresentsBooleanTypeList ? $list->toBooleans() : $list->toNativeType()) );
 	}
 
 	public function reverse(): void
@@ -57,17 +28,26 @@ trait RepresentingMutableBooleanValueList
 
 	public function unique(): void
 	{
-		$this->booleans = array_values( array_unique( $this->booleans ) );
+		$uniqueValues = [];
+
+		foreach ( $this->booleans as $value )
+		{
+			foreach ( $uniqueValues as $uniqueValue )
+			{
+				if ( $uniqueValue === $value )
+				{
+					continue 2;
+				}
+			}
+
+			$uniqueValues[] = $value;
+		}
+
+		$this->booleans = $uniqueValues;
 	}
 
 	public function sort( ComparesValues $comparer ): void
 	{
-		usort(
-			$this->booleans,
-			function ( bool $firstValue, bool $secondValue ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstValue, $secondValue );
-			}
-		);
+		usort( $this->booleans, $comparer->compare( ... ) );
 	}
 }

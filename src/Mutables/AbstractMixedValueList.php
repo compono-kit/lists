@@ -4,6 +4,7 @@ namespace ComponoKit\Types\Lists\Mutables;
 
 use ComponoKit\Types\Lists\Exceptions\InvalidMixedValueListException;
 use ComponoKit\Types\Lists\Interfaces\Mutables\RepresentsMutableMixedValueList;
+use ComponoKit\Types\Lists\Interfaces\RepresentsMixedTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedValueList;
 use ComponoKit\Types\Lists\Mutables\Traits\RepresentingMutableMixedValueList;
 
@@ -18,7 +19,7 @@ abstract class AbstractMixedValueList implements RepresentsMutableMixedValueList
 		$this->mixedValues = $mixedValues;
 	}
 
-	abstract protected static function isValueValid( string $value ): bool;
+	abstract protected static function isValueValid( int|float|string|bool|array $value ): bool;
 
 	/**
 	 * @throws \JsonException
@@ -28,44 +29,80 @@ abstract class AbstractMixedValueList implements RepresentsMutableMixedValueList
 		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
-	public function diff( RepresentsMixedValueList $list ): RepresentsMixedValueList
+	public function replace( int $index, int|float|string|bool|array $value ): void
 	{
-		return new static(
-			...array_udiff(
-				$this->mixedValues,
-				$list->toNativeType(),
-				function ( int|float|string|bool|array $firstValue, int|float|string|bool|array $secondValue ): int
-				{
-					return $firstValue === $secondValue ? 0 : 1;
-				}
-			)
-		);
+		$this->guardIndexExists( $index );
+		$this->validate( $value );
+
+		$this->mixedValues[ $index ] = $value;
 	}
 
-	public function intersect( RepresentsMixedValueList $list ): RepresentsMixedValueList
+	public function append( int|float|string|bool|array ...$values ): void
 	{
-		return new static(
-			...array_uintersect(
-				$this->mixedValues,
-				$list->toNativeType(),
-				function ( int|float|string|bool|array $firstValue, int|float|string|bool|array $secondValue ): int
-				{
-					return $firstValue === $secondValue ? 0 : 1;
-				}
-			)
-		);
+		$this->validate( ...$values );
+
+		array_push( $this->mixedValues, ...$values );
+	}
+
+	public function prepend( int|float|string|bool|array ...$values ): void
+	{
+		$this->validate( ...$values );
+
+		array_unshift( $this->mixedValues, ...$values );
+	}
+
+	public function appendList( RepresentsMixedValueList|RepresentsMixedTypeList $list ): void
+	{
+		$values = $list instanceof RepresentsMixedTypeList ? $list->toNativeTypes() : $list->toNativeType();
+		$this->validate( ...$values );
+
+		array_push( $this->mixedValues, ...$values );
+	}
+
+	public function prependList( RepresentsMixedValueList|RepresentsMixedTypeList $list ): void
+	{
+		$values = $list instanceof RepresentsMixedTypeList ? $list->toNativeTypes() : $list->toNativeType();
+		$this->validate( ...$values );
+
+		array_unshift( $this->mixedValues, ...$values );
+	}
+
+	public function diff( RepresentsMixedValueList $list ): static
+	{
+		$values = [];
+		foreach ( $this->mixedValues as $value )
+		{
+			if ( !$this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
+	}
+
+	public function intersect( RepresentsMixedValueList $list ): static
+	{
+		$values = [];
+		foreach ( $this->mixedValues as $value )
+		{
+			if ( $this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, RepresentsMixedValueList>
 	 */
 	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->mixedValues, $count ) as $types )
+		foreach ( array_chunk( $this->mixedValues, $count ) as $values )
 		{
-			yield new static( ...$types );
+			yield new static( ...$values );
 		}
 	}
 
@@ -80,7 +117,7 @@ abstract class AbstractMixedValueList implements RepresentsMutableMixedValueList
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $value ) )
 			{
-				throw (new InvalidMixedValueListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw new InvalidMixedValueListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
 	}

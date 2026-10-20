@@ -21,37 +21,73 @@ abstract class AbstractStringTypeList implements RepresentsMutableStringTypeList
 
 	abstract protected static function isValueValid( RepresentsString $type ): bool;
 
-	public function diff( RepresentsStringTypeList $list ): RepresentsStringTypeList
+	public function replace( int $index, RepresentsString $type ): void
 	{
-		return new static(
-			...array_udiff(
-				$this->stringTypes,
-				$list->toNativeType(),
-				function ( RepresentsString $firstType, RepresentsString $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$this->guardIndexExists( $index );
+		$this->validate( $type );
+
+		$this->stringTypes[ $index ] = $type;
 	}
 
-	public function intersect( RepresentsStringTypeList $list ): RepresentsStringTypeList
+	public function append( RepresentsString ...$types ): void
 	{
-		return new static(
-			...array_uintersect(
-				$this->stringTypes,
-				$list->toNativeType(),
-				function ( RepresentsString $firstType, RepresentsString $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$this->validate( ...$types );
+
+		array_push( $this->stringTypes, ...$types );
+	}
+
+	public function prepend( RepresentsString ...$types ): void
+	{
+		$this->validate( ...$types );
+
+		array_unshift( $this->stringTypes, ...$types );
+	}
+
+	public function appendList( RepresentsStringTypeList $list ): void
+	{
+		$types = $list->toNativeType();
+		$this->validate( ...$types );
+
+		array_push( $this->stringTypes, ...$types );
+	}
+
+	public function prependList( RepresentsStringTypeList $list ): void
+	{
+		$types = $list->toNativeType();
+		$this->validate( ...$types );
+
+		array_unshift( $this->stringTypes, ...$types );
+	}
+
+	public function diff( RepresentsStringTypeList $list ): static
+	{
+		$types = [];
+		foreach ( $this->stringTypes as $type )
+		{
+			if ( !$this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
+	}
+
+	public function intersect( RepresentsStringTypeList $list ): static
+	{
+		$types = [];
+		foreach ( $this->stringTypes as $type )
+		{
+			if ( $this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, RepresentsStringTypeList>
 	 */
 	public function split( int $count ): \Iterator
@@ -73,7 +109,7 @@ abstract class AbstractStringTypeList implements RepresentsMutableStringTypeList
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $type ) )
 			{
-				throw (new InvalidStringTypeListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw new InvalidStringTypeListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
 	}

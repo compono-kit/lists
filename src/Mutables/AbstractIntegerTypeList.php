@@ -21,37 +21,73 @@ abstract class AbstractIntegerTypeList implements RepresentsMutableIntegerTypeLi
 
 	abstract protected static function isValueValid( RepresentsInteger $type ): bool;
 
-	public function diff( RepresentsIntegerTypeList $list ): RepresentsIntegerTypeList
+	public function replace( int $index, RepresentsInteger $type ): void
 	{
-		return new static(
-			...array_udiff(
-				$this->integerTypes,
-				$list->toNativeType(),
-				function ( RepresentsInteger $firstType, RepresentsInteger $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$this->guardIndexExists( $index );
+		$this->validate( $type );
+
+		$this->integerTypes[ $index ] = $type;
 	}
 
-	public function intersect( RepresentsIntegerTypeList $list ): RepresentsIntegerTypeList
+	public function append( RepresentsInteger ...$types ): void
 	{
-		return new static(
-			...array_uintersect(
-				$this->integerTypes,
-				$list->toNativeType(),
-				function ( RepresentsInteger $firstType, RepresentsInteger $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$this->validate( ...$types );
+
+		array_push( $this->integerTypes, ...$types );
+	}
+
+	public function prepend( RepresentsInteger ...$types ): void
+	{
+		$this->validate( ...$types );
+
+		array_unshift( $this->integerTypes, ...$types );
+	}
+
+	public function appendList( RepresentsIntegerTypeList $list ): void
+	{
+		$types = $list->toNativeType();
+		$this->validate( ...$types );
+
+		array_push( $this->integerTypes, ...$types );
+	}
+
+	public function prependList( RepresentsIntegerTypeList $list ): void
+	{
+		$types = $list->toNativeType();
+		$this->validate( ...$types );
+
+		array_unshift( $this->integerTypes, ...$types );
+	}
+
+	public function diff( RepresentsIntegerTypeList $list ): static
+	{
+		$types = [];
+		foreach ( $this->integerTypes as $type )
+		{
+			if ( !$this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
+	}
+
+	public function intersect( RepresentsIntegerTypeList $list ): static
+	{
+		$types = [];
+		foreach ( $this->integerTypes as $type )
+		{
+			if ( $this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, RepresentsIntegerTypeList>
 	 */
 	public function split( int $count ): \Iterator
@@ -73,7 +109,7 @@ abstract class AbstractIntegerTypeList implements RepresentsMutableIntegerTypeLi
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $type ) )
 			{
-				throw (new InvalidIntegerTypeListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw new InvalidIntegerTypeListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
 	}

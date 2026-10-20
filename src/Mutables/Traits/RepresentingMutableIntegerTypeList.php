@@ -2,9 +2,7 @@
 
 namespace ComponoKit\Types\Lists\Mutables\Traits;
 
-use ComponoKit\Types\Interfaces\RepresentsInteger;
 use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
-use ComponoKit\Types\Lists\Interfaces\RepresentsIntegerTypeList;
 use ComponoKit\Types\Lists\Traits\RepresentingIntegerTypeList;
 
 trait RepresentingMutableIntegerTypeList
@@ -16,33 +14,6 @@ trait RepresentingMutableIntegerTypeList
 		$this->guardIndexExists( $index );
 
 		array_splice( $this->integerTypes, $index, 1 );
-	}
-
-	public function replace( int $index, RepresentsInteger $type ): void
-	{
-		$this->guardIndexExists( $index );
-
-		$this->integerTypes[ $index ] = $type;
-	}
-
-	public function append( RepresentsInteger...$types ): void
-	{
-		array_push( $this->integerTypes, ...$types );
-	}
-
-	public function prepend( RepresentsInteger...$types ): void
-	{
-		array_unshift( $this->integerTypes, ...$types );
-	}
-
-	public function appendList( RepresentsIntegerTypeList $list ): void
-	{
-		array_push( $this->integerTypes, ...$list->toNativeType() );
-	}
-
-	public function prependList( RepresentsIntegerTypeList $list ): void
-	{
-		array_unshift( $this->integerTypes, ...$list->toNativeType() );
 	}
 
 	public function reverse(): void
@@ -57,18 +28,19 @@ trait RepresentingMutableIntegerTypeList
 
 	public function unique(): void
 	{
-		$existingTypes = [];
-		$uniqueTypes   = [];
+		$uniqueTypes = [];
 
 		foreach ( $this->integerTypes as $type )
 		{
-			$key = $type->toNativeType();
-
-			if ( !isset( $existingTypes[ $key ] ) )
+			foreach ( $uniqueTypes as $uniqueType )
 			{
-				$existingTypes[ $key ] = true;
-				$uniqueTypes[]         = $type;
+				if ( $uniqueType->equals( $type ) )
+				{
+					continue 2;
+				}
 			}
+
+			$uniqueTypes[] = $type;
 		}
 
 		$this->integerTypes = $uniqueTypes;
@@ -76,12 +48,6 @@ trait RepresentingMutableIntegerTypeList
 
 	public function sort( ComparesTypes $comparer ): void
 	{
-		usort(
-			$this->integerTypes,
-			function ( RepresentsInteger $firstType, RepresentsInteger $secondType ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstType, $secondType );
-			}
-		);
+		usort( $this->integerTypes, $comparer->compare( ... ) );
 	}
 }

@@ -2,10 +2,10 @@
 
 namespace ComponoKit\Types\Lists\Exceptions;
 
-use ComponoKit\Types\Interfaces\RepresentsTypeException;
+use ComponoKit\Types\Lists\Interfaces\RepresentsListTypeException;
 use ComponoKit\Types\Interfaces\Traits\ProvidingContext;
 
-class InvalidBooleanValueListException extends \LogicException implements RepresentsTypeException
+class InvalidBooleanValueListException extends \LogicException implements RepresentsListTypeException
 {
 	use ProvidingContext;
 }

@@ -6,6 +6,7 @@ use ComponoKit\Types\Interfaces\RepresentsString;
 use ComponoKit\Types\Interfaces\RepresentsType;
 use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Interfaces\MatchesType;
+use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringTypeList;
 
 trait RepresentingStringTypeList
@@ -32,7 +33,12 @@ trait RepresentingStringTypeList
 
 	public function equals( RepresentsType $type ): bool
 	{
-		if ( get_class( $this ) !== get_class( $type ) )
+		if ( $this::class !== $type::class )
+		{
+			return false;
+		}
+
+		if ( $this->count() !== $type->count() )
 		{
 			return false;
 		}
@@ -40,11 +46,6 @@ trait RepresentingStringTypeList
 		/**
 		 * @var RepresentsStringTypeList $type
 		 */
-		if ( $this->count() !== $type->count() )
-		{
-			return false;
-		}
-
 		return $this->equalsValues( $type );
 	}
 
@@ -105,7 +106,7 @@ trait RepresentingStringTypeList
 
 	public function valid(): bool
 	{
-		return isset( $this->stringTypes[ $this->key() ] );
+		return null !== key( $this->stringTypes );
 	}
 
 	public function rewind(): void
@@ -115,17 +116,38 @@ trait RepresentingStringTypeList
 
 	public function current(): RepresentsString
 	{
-		return current( $this->stringTypes );
+		$index = key( $this->stringTypes );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'Current index does not exist' );
+		}
+
+		return $this->stringTypes[ $index ];
 	}
 
 	public function first(): RepresentsString
 	{
-		return $this->stringTypes[ array_keys( $this->stringTypes )[0] ];
+		$index = array_key_first( $this->stringTypes );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'List is empty' );
+		}
+
+		return $this->stringTypes[ $index ];
 	}
 
 	public function last(): RepresentsString
 	{
-		return $this->stringTypes[ array_keys( $this->stringTypes )[ count( $this->stringTypes ) - 1 ] ];
+		$index = array_key_last( $this->stringTypes );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'List is empty' );
+		}
+
+		return $this->stringTypes[ $index ];
 	}
 
 	public function findIndex( MatchesType $matcher ): ?int
@@ -168,5 +190,18 @@ trait RepresentingStringTypeList
 		{
 			throw new MissingIndexException( 'Index does not exist: ' . $index );
 		}
+	}
+
+	private function existsIn( RepresentsString $typeToCheck, RepresentsList $list ): bool
+	{
+		foreach ( $list as $item )
+		{
+			if ( $item->equals( $typeToCheck ) )
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

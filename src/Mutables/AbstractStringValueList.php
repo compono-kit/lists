@@ -4,6 +4,7 @@ namespace ComponoKit\Types\Lists\Mutables;
 
 use ComponoKit\Types\Lists\Exceptions\InvalidStringValueListException;
 use ComponoKit\Types\Lists\Interfaces\Mutables\RepresentsMutableStringValueList;
+use ComponoKit\Types\Lists\Interfaces\RepresentsStringTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringValueList;
 use ComponoKit\Types\Lists\Mutables\Traits\RepresentingMutableStringValueList;
 
@@ -28,44 +29,80 @@ abstract class AbstractStringValueList implements RepresentsMutableStringValueLi
 		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
-	public function diff( RepresentsStringValueList $list ): RepresentsStringValueList
+	public function replace( int $index, string $value ): void
 	{
-		return new static(
-			...array_udiff(
-				$this->strings,
-				$list->toNativeType(),
-				function ( string $firstValue, string $secondValue ): int
-				{
-					return $firstValue === $secondValue ? 0 : 1;
-				}
-			)
-		);
+		$this->guardIndexExists( $index );
+		$this->validate( $value );
+
+		$this->strings[ $index ] = $value;
 	}
 
-	public function intersect( RepresentsStringValueList $list ): RepresentsStringValueList
+	public function append( string ...$values ): void
 	{
-		return new static(
-			...array_uintersect(
-				$this->strings,
-				$list->toNativeType(),
-				function ( string $firstValue, string $secondValue ): int
-				{
-					return $firstValue === $secondValue ? 0 : 1;
-				}
-			)
-		);
+		$this->validate( ...$values );
+
+		array_push( $this->strings, ...$values );
+	}
+
+	public function prepend( string ...$values ): void
+	{
+		$this->validate( ...$values );
+
+		array_unshift( $this->strings, ...$values );
+	}
+
+	public function appendList( RepresentsStringValueList|RepresentsStringTypeList $list ): void
+	{
+		$values = $list instanceof RepresentsStringTypeList ? $list->toStrings() : $list->toNativeType();
+		$this->validate( ...$values );
+
+		array_push( $this->strings, ...$values );
+	}
+
+	public function prependList( RepresentsStringValueList|RepresentsStringTypeList $list ): void
+	{
+		$values = $list instanceof RepresentsStringTypeList ? $list->toStrings() : $list->toNativeType();
+		$this->validate( ...$values );
+
+		array_unshift( $this->strings, ...$values );
+	}
+
+	public function diff( RepresentsStringValueList $list ): static
+	{
+		$values = [];
+		foreach ( $this->strings as $value )
+		{
+			if ( !$this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
+	}
+
+	public function intersect( RepresentsStringValueList $list ): static
+	{
+		$values = [];
+		foreach ( $this->strings as $value )
+		{
+			if ( $this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, RepresentsStringValueList>
 	 */
 	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->strings, $count ) as $types )
+		foreach ( array_chunk( $this->strings, $count ) as $values )
 		{
-			yield new static( ...$types );
+			yield new static( ...$values );
 		}
 	}
 
@@ -80,7 +117,7 @@ abstract class AbstractStringValueList implements RepresentsMutableStringValueLi
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $value ) )
 			{
-				throw (new InvalidStringValueListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw new InvalidStringValueListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
 	}

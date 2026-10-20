@@ -12,7 +12,7 @@ class MixedTypeFactory implements BuildsTypes
 	{
 		if ( is_string( $value ) )
 		{
-			return (new StringFactory())->build( $value );
+			return new StringFactory()->build( $value );
 		}
 
 		throw new \RuntimeException( 'Invalid type' );

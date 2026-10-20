@@ -4,6 +4,7 @@ namespace ComponoKit\Types\Lists\Mutables;
 
 use ComponoKit\Types\Lists\Exceptions\InvalidFloatValueListException;
 use ComponoKit\Types\Lists\Interfaces\Mutables\RepresentsMutableFloatValueList;
+use ComponoKit\Types\Lists\Interfaces\RepresentsFloatTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsFloatValueList;
 use ComponoKit\Types\Lists\Mutables\Traits\RepresentingMutableFloatValueList;
 
@@ -28,44 +29,80 @@ abstract class AbstractFloatValueList implements RepresentsMutableFloatValueList
 		return new static( ...json_decode( $json, true, 512, JSON_THROW_ON_ERROR ) );
 	}
 
-	public function diff( RepresentsFloatValueList $list ): RepresentsFloatValueList
+	public function replace( int $index, float $value ): void
 	{
-		return new static(
-			...array_udiff(
-				$this->floats,
-				$list->toNativeType(),
-				function ( float $firstValue, float $secondValue ): int
-				{
-					return $firstValue === $secondValue ? 0 : 1;
-				}
-			)
-		);
+		$this->guardIndexExists( $index );
+		$this->validate( $value );
+
+		$this->floats[ $index ] = $value;
 	}
 
-	public function intersect( RepresentsFloatValueList $list ): RepresentsFloatValueList
+	public function append( float ...$values ): void
 	{
-		return new static(
-			...array_uintersect(
-				$this->floats,
-				$list->toNativeType(),
-				function ( float $firstValue, float $secondValue ): int
-				{
-					return $firstValue === $secondValue ? 0 : 1;
-				}
-			)
-		);
+		$this->validate( ...$values );
+
+		array_push( $this->floats, ...$values );
+	}
+
+	public function prepend( float ...$values ): void
+	{
+		$this->validate( ...$values );
+
+		array_unshift( $this->floats, ...$values );
+	}
+
+	public function appendList( RepresentsFloatValueList|RepresentsFloatTypeList $list ): void
+	{
+		$values = $list instanceof RepresentsFloatTypeList ? $list->toFloats() : $list->toNativeType();
+		$this->validate( ...$values );
+
+		array_push( $this->floats, ...$values );
+	}
+
+	public function prependList( RepresentsFloatValueList|RepresentsFloatTypeList $list ): void
+	{
+		$values = $list instanceof RepresentsFloatTypeList ? $list->toFloats() : $list->toNativeType();
+		$this->validate( ...$values );
+
+		array_unshift( $this->floats, ...$values );
+	}
+
+	public function diff( RepresentsFloatValueList $list ): static
+	{
+		$values = [];
+		foreach ( $this->floats as $value )
+		{
+			if ( !$this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
+	}
+
+	public function intersect( RepresentsFloatValueList $list ): static
+	{
+		$values = [];
+		foreach ( $this->floats as $value )
+		{
+			if ( $this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, RepresentsFloatValueList>
 	 */
 	public function split( int $count ): \Iterator
 	{
-		foreach ( array_chunk( $this->floats, $count ) as $types )
+		foreach ( array_chunk( $this->floats, $count ) as $values )
 		{
-			yield new static( ...$types );
+			yield new static( ...$values );
 		}
 	}
 
@@ -80,7 +117,7 @@ abstract class AbstractFloatValueList implements RepresentsMutableFloatValueList
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $value ) )
 			{
-				throw (new InvalidFloatValueListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw new InvalidFloatValueListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
 	}

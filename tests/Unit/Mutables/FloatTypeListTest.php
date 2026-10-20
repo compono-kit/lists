@@ -11,6 +11,7 @@ use ComponoKit\Types\Lists\Interfaces\MatchesType;
 use ComponoKit\Types\Lists\Interfaces\Mutables\RepresentsMutableFloatTypeList;
 use ComponoKit\Types\Lists\Mutables\FloatTypeList;
 use ComponoKit\Types\Lists\Tests\Unit\Mutables\fakes\NoTwoFloatTypeList;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class FloatTypeListTest extends TestCase
@@ -42,9 +43,7 @@ class FloatTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider EqualsDataProvider
-	 */
+	#[DataProvider( 'EqualsDataProvider' )]
 	public function testEquals( RepresentsMutableFloatTypeList $originalList, RepresentsMutableFloatTypeList $actualList, bool $expected ): void
 	{
 		self::assertSame( $expected, $originalList->equals( $actualList ) );
@@ -77,9 +76,7 @@ class FloatTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider EqualsValuesDataProvider
-	 */
+	#[DataProvider( 'EqualsValuesDataProvider' )]
 	public function testEqualsValues( array $values1, array $values2, bool $expected ): void
 	{
 		$originalList = new FloatTypeList( ...$values1 );
@@ -249,9 +246,7 @@ class FloatTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider ReplaceDataProvider
-	 */
+	#[DataProvider( 'ReplaceDataProvider' )]
 	public function testReplace( array $values, int $index, float $expected ): void
 	{
 		$list  = new FloatTypeList( ...$values );
@@ -285,9 +280,7 @@ class FloatTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider ExistsDataProvider
-	 */
+	#[DataProvider( 'ExistsDataProvider' )]
 	public function testExists( array $values, int $index, bool $expected ): void
 	{
 		$list = new FloatTypeList( ...$values );

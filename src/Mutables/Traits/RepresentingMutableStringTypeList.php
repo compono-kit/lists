@@ -2,9 +2,7 @@
 
 namespace ComponoKit\Types\Lists\Mutables\Traits;
 
-use ComponoKit\Types\Interfaces\RepresentsString;
 use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
-use ComponoKit\Types\Lists\Interfaces\RepresentsStringTypeList;
 use ComponoKit\Types\Lists\Traits\RepresentingStringTypeList;
 
 trait RepresentingMutableStringTypeList
@@ -16,33 +14,6 @@ trait RepresentingMutableStringTypeList
 		$this->guardIndexExists( $index );
 
 		array_splice( $this->stringTypes, $index, 1 );
-	}
-
-	public function replace( int $index, RepresentsString $type ): void
-	{
-		$this->guardIndexExists( $index );
-
-		$this->stringTypes[ $index ] = $type;
-	}
-
-	public function append( RepresentsString...$types ): void
-	{
-		array_push( $this->stringTypes, ...$types );
-	}
-
-	public function prepend( RepresentsString...$types ): void
-	{
-		array_unshift( $this->stringTypes, ...$types );
-	}
-
-	public function appendList( RepresentsStringTypeList $list ): void
-	{
-		array_push( $this->stringTypes, ...$list->toNativeType() );
-	}
-
-	public function prependList( RepresentsStringTypeList $list ): void
-	{
-		array_unshift( $this->stringTypes, ...$list->toNativeType() );
 	}
 
 	public function reverse(): void
@@ -57,18 +28,19 @@ trait RepresentingMutableStringTypeList
 
 	public function unique(): void
 	{
-		$existingTypes = [];
-		$uniqueTypes   = [];
+		$uniqueTypes = [];
 
 		foreach ( $this->stringTypes as $type )
 		{
-			$key = $type->toNativeType();
-
-			if ( !isset( $existingTypes[ $key ] ) )
+			foreach ( $uniqueTypes as $uniqueType )
 			{
-				$existingTypes[ $key ] = true;
-				$uniqueTypes[]         = $type;
+				if ( $uniqueType->equals( $type ) )
+				{
+					continue 2;
+				}
 			}
+
+			$uniqueTypes[] = $type;
 		}
 
 		$this->stringTypes = $uniqueTypes;
@@ -76,12 +48,6 @@ trait RepresentingMutableStringTypeList
 
 	public function sort( ComparesTypes $comparer ): void
 	{
-		usort(
-			$this->stringTypes,
-			function ( RepresentsString $firstType, RepresentsString $secondType ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstType, $secondType );
-			}
-		);
+		usort( $this->stringTypes, $comparer->compare( ... ) );
 	}
 }

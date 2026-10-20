@@ -6,6 +6,7 @@ use ComponoKit\Types\Interfaces\RepresentsInteger;
 use ComponoKit\Types\Interfaces\RepresentsType;
 use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Interfaces\MatchesType;
+use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsIntegerTypeList;
 
 trait RepresentingIntegerTypeList
@@ -32,7 +33,12 @@ trait RepresentingIntegerTypeList
 
 	public function equals( RepresentsType $type ): bool
 	{
-		if ( get_class( $this ) !== get_class( $type ) )
+		if ( $this::class !== $type::class )
+		{
+			return false;
+		}
+
+		if ( $this->count() !== $type->count() )
 		{
 			return false;
 		}
@@ -40,11 +46,6 @@ trait RepresentingIntegerTypeList
 		/**
 		 * @var RepresentsIntegerTypeList $type
 		 */
-		if ( $this->count() !== $type->count() )
-		{
-			return false;
-		}
-
 		return $this->equalsValues( $type );
 	}
 
@@ -66,6 +67,9 @@ trait RepresentingIntegerTypeList
 		return true;
 	}
 
+	/**
+	 * @return array<int, RepresentsInteger>
+	 */
 	public function toNativeType(): array
 	{
 		return $this->integerTypes;
@@ -102,7 +106,7 @@ trait RepresentingIntegerTypeList
 
 	public function valid(): bool
 	{
-		return isset( $this->integerTypes[ $this->key() ] );
+		return null !== key( $this->integerTypes );
 	}
 
 	public function rewind(): void
@@ -112,22 +116,38 @@ trait RepresentingIntegerTypeList
 
 	public function current(): RepresentsInteger
 	{
-		return current( $this->integerTypes );
+		$index = key( $this->integerTypes );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'Current index does not exist' );
+		}
+
+		return $this->integerTypes[ $index ];
 	}
 
 	public function first(): RepresentsInteger
 	{
-		return $this->integerTypes[ array_keys( $this->integerTypes )[0] ];
+		$index = array_key_first( $this->integerTypes );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'List is empty' );
+		}
+
+		return $this->integerTypes[ $index ];
 	}
 
 	public function last(): RepresentsInteger
 	{
-		return $this->integerTypes[ array_keys( $this->integerTypes )[ count( $this->integerTypes ) - 1 ] ];
-	}
+		$index = array_key_last( $this->integerTypes );
 
-	public function count(): int
-	{
-		return count( $this->integerTypes );
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'List is empty' );
+		}
+
+		return $this->integerTypes[ $index ];
 	}
 
 	public function findIndex( MatchesType $matcher ): ?int
@@ -141,6 +161,11 @@ trait RepresentingIntegerTypeList
 		}
 
 		return null;
+	}
+
+	public function count(): int
+	{
+		return count( $this->integerTypes );
 	}
 
 	public function toJson( bool $pretty = false ): string
@@ -165,5 +190,18 @@ trait RepresentingIntegerTypeList
 		{
 			throw new MissingIndexException( 'Index does not exist: ' . $index );
 		}
+	}
+
+	private function existsIn( RepresentsInteger $typeToCheck, RepresentsList $list ): bool
+	{
+		foreach ( $list as $item )
+		{
+			if ( $item->equals( $typeToCheck ) )
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

@@ -9,7 +9,6 @@ use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableFloatTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsFloatTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsFloatValueList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Traits\RepresentingFloatTypeList;
 
 abstract class AbstractFloatTypeList implements RepresentsImmutableFloatTypeList
@@ -56,12 +55,12 @@ abstract class AbstractFloatTypeList implements RepresentsImmutableFloatTypeList
 		return new static( ...$types );
 	}
 
-	public function append( RepresentsFloat...$types ): static
+	public function append( RepresentsFloat ...$types ): static
 	{
 		return new static( ...$this->floatTypes, ...$types );
 	}
 
-	public function prepend( RepresentsFloat...$types ): static
+	public function prepend( RepresentsFloat ...$types ): static
 	{
 		return new static( ...$types, ...$this->floatTypes );
 	}
@@ -107,48 +106,40 @@ abstract class AbstractFloatTypeList implements RepresentsImmutableFloatTypeList
 	public function sort( ComparesTypes $comparer ): static
 	{
 		$types = $this->floatTypes;
-		usort(
-			$types,
-			function ( RepresentsFloat $firstType, RepresentsFloat $secondType ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstType, $secondType );
-			}
-		);
+		usort( $types, $comparer->compare( ... ) );
 
 		return new static( ...$types );
 	}
 
 	public function diff( RepresentsFloatTypeList $list ): static
 	{
-		return new static(
-			...array_udiff(
-				$this->floatTypes,
-				$list->toNativeType(),
-				function ( RepresentsFloat $firstType, RepresentsFloat $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$types = [];
+		foreach ( $this->floatTypes as $type )
+		{
+			if ( !$this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	public function intersect( RepresentsFloatTypeList $list ): static
 	{
-		return new static(
-			...array_uintersect(
-				$this->floatTypes,
-				$list->toNativeType(),
-				function ( RepresentsFloat $firstType, RepresentsFloat $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$types = [];
+		foreach ( $this->floatTypes as $type )
+		{
+			if ( $this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
@@ -164,31 +155,18 @@ abstract class AbstractFloatTypeList implements RepresentsImmutableFloatTypeList
 		return new static( ...array_slice( $this->floatTypes, $index, $count ) );
 	}
 
-	private function existsIn( RepresentsFloat $typeToCheck, RepresentsList $list ): bool
-	{
-		foreach ( $list as $type )
-		{
-			if ( $type->equals( $typeToCheck ) )
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	protected function validate( RepresentsFloat ...$types ): void
 	{
 		foreach ( $types as $index => $type )
 		{
 			if ( !is_int( $index ) )
 			{
-				throw (new InvalidFloatTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw new InvalidFloatTypeListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 
 			if ( !static::isValueValid( $type ) )
 			{
-				throw (new InvalidFloatTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $type, ] );
+				throw new InvalidFloatTypeListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
 	}

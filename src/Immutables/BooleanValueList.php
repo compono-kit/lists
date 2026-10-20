@@ -4,7 +4,7 @@ namespace ComponoKit\Types\Lists\Immutables;
 
 class BooleanValueList extends AbstractBooleanValueList
 {
-	public static function isValueValid( bool $value ): bool
+	protected static function isValueValid( bool $value ): bool
 	{
 		return true;
 	}

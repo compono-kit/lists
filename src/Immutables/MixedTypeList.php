@@ -6,7 +6,7 @@ use ComponoKit\Types\Interfaces\RepresentsType;
 
 class MixedTypeList extends AbstractMixedTypeList
 {
-	public static function isValueValid( RepresentsType $type ): bool
+	protected static function isValueValid( RepresentsType $type ): bool
 	{
 		return true;
 	}

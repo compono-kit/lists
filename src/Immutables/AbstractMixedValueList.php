@@ -5,7 +5,6 @@ namespace ComponoKit\Types\Lists\Immutables;
 use ComponoKit\Types\Lists\Exceptions\InvalidMixedValueListException;
 use ComponoKit\Types\Lists\Interfaces\ComparesValues;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableMixedValueList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedValueList;
 use ComponoKit\Types\Lists\Traits\RepresentingMixedValueList;
@@ -51,24 +50,24 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 		return new static( ...$values );
 	}
 
-	public function append( int|float|string|bool|array...$values ): static
+	public function append( int|float|string|bool|array ...$values ): static
 	{
 		return new static( ...$this->mixedValues, ...$values );
 	}
 
-	public function prepend( int|float|string|bool|array...$values ): static
+	public function prepend( int|float|string|bool|array ...$values ): static
 	{
 		return new static( ...$values, ...$this->mixedValues );
 	}
 
 	public function appendList( RepresentsMixedValueList|RepresentsMixedTypeList $list ): static
 	{
-		return new static( ...$this->toNativeType(), ...$list->toNativeType() );
+		return new static( ...$this->toNativeType(), ...($list instanceof RepresentsMixedTypeList ? $list->toNativeTypes() : $list->toNativeType()) );
 	}
 
 	public function prependList( RepresentsMixedValueList|RepresentsMixedTypeList $list ): static
 	{
-		return new static( ...$list->toNativeType(), ...$this->toNativeType() );
+		return new static( ...($list instanceof RepresentsMixedTypeList ? $list->toNativeTypes() : $list->toNativeType()), ...$this->toNativeType() );
 	}
 
 	public function reverse(): static
@@ -102,48 +101,40 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 	public function sort( ComparesValues $comparer ): static
 	{
 		$values = $this->mixedValues;
-		usort(
-			$values,
-			function ( int|float|string|bool|array $firstValue, int|float|string|bool|array $secondValue ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstValue, $secondValue );
-			}
-		);
+		usort( $values, $comparer->compare( ... ) );
 
 		return new static( ...$values );
 	}
 
 	public function diff( RepresentsMixedValueList $list ): static
 	{
-		return new static(
-			...array_udiff(
-				$this->mixedValues,
-				$list->toNativeType(),
-				function ( int|float|string|bool|array $firstType, int|float|string|bool|array $secondType ): int
-				{
-					return $firstType === $secondType ? 0 : 1;
-				}
-			)
-		);
+		$values = [];
+		foreach ( $this->mixedValues as $value )
+		{
+			if ( !$this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
 	}
 
 	public function intersect( RepresentsMixedValueList $list ): static
 	{
-		return new static(
-			...array_uintersect(
-				$this->mixedValues,
-				$list->toNativeType(),
-				function ( int|float|string|bool|array $firstType, int|float|string|bool|array $secondType ): int
-				{
-					return $firstType === $secondType ? 0 : 1;
-				}
-			)
-		);
+		$values = [];
+		foreach ( $this->mixedValues as $value )
+		{
+			if ( $this->existsIn( $value, $list ) )
+			{
+				$values[] = $value;
+			}
+		}
+
+		return new static( ...$values );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
@@ -165,26 +156,13 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 		{
 			if ( !is_int( $index ) )
 			{
-				throw (new InvalidMixedValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw new InvalidMixedValueListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 
 			if ( !static::isValueValid( $value ) )
 			{
-				throw (new InvalidMixedValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'value' => $value, ] );
+				throw new InvalidMixedValueListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
-	}
-
-	private function existsIn( int|float|string|bool|array $valueToCheck, RepresentsList $list ): bool
-	{
-		foreach ( $list as $value )
-		{
-			if ( $value === $valueToCheck )
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 }

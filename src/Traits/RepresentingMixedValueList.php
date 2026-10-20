@@ -5,6 +5,7 @@ namespace ComponoKit\Types\Lists\Traits;
 use ComponoKit\Types\Interfaces\RepresentsType;
 use ComponoKit\Types\Lists\Exceptions\MissingIndexException;
 use ComponoKit\Types\Lists\Interfaces\MatchesValue;
+use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsMixedValueList;
 
 trait RepresentingMixedValueList
@@ -31,7 +32,12 @@ trait RepresentingMixedValueList
 
 	public function equals( RepresentsType $type ): bool
 	{
-		if ( get_class( $this ) !== get_class( $type ) )
+		if ( $this::class !== $type::class )
+		{
+			return false;
+		}
+
+		if ( $this->count() !== $type->count() )
 		{
 			return false;
 		}
@@ -39,11 +45,6 @@ trait RepresentingMixedValueList
 		/**
 		 * @var RepresentsMixedValueList $type
 		 */
-		if ( $this->count() !== $type->count() )
-		{
-			return false;
-		}
-
 		return $this->equalsValues( $type );
 	}
 
@@ -73,21 +74,6 @@ trait RepresentingMixedValueList
 		return $this->mixedValues;
 	}
 
-	public function first(): int|float|string|bool|array
-	{
-		return $this->mixedValues[ array_keys( $this->mixedValues )[0] ];
-	}
-
-	public function last(): int|float|string|bool|array
-	{
-		return $this->mixedValues[ array_keys( $this->mixedValues )[ count( $this->mixedValues ) - 1 ] ];
-	}
-
-	public function current(): int|float|string|bool|array
-	{
-		return current( $this->mixedValues );
-	}
-
 	public function next(): void
 	{
 		next( $this->mixedValues );
@@ -100,7 +86,7 @@ trait RepresentingMixedValueList
 
 	public function valid(): bool
 	{
-		return isset( $this->mixedValues[ $this->key() ] );
+		return null !== key( $this->mixedValues );
 	}
 
 	public function rewind(): void
@@ -108,9 +94,40 @@ trait RepresentingMixedValueList
 		reset( $this->mixedValues );
 	}
 
-	public function count(): int
+	public function current(): int|float|string|bool|array
 	{
-		return count( $this->mixedValues );
+		$index = key( $this->mixedValues );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'Current index does not exist' );
+		}
+
+		return $this->mixedValues[ $index ];
+	}
+
+	public function first(): int|float|string|bool|array
+	{
+		$index = array_key_first( $this->mixedValues );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'List is empty' );
+		}
+
+		return $this->mixedValues[ $index ];
+	}
+
+	public function last(): int|float|string|bool|array
+	{
+		$index = array_key_last( $this->mixedValues );
+
+		if ( null === $index )
+		{
+			throw new MissingIndexException( 'List is empty' );
+		}
+
+		return $this->mixedValues[ $index ];
 	}
 
 	public function findIndex( MatchesValue $matcher ): ?int
@@ -124,6 +141,11 @@ trait RepresentingMixedValueList
 		}
 
 		return null;
+	}
+
+	public function count(): int
+	{
+		return count( $this->mixedValues );
 	}
 
 	public function toJson( bool $pretty = false ): string
@@ -148,5 +170,18 @@ trait RepresentingMixedValueList
 		{
 			throw new MissingIndexException( 'Index does not exist: ' . $index );
 		}
+	}
+
+	private function existsIn( int|float|string|bool|array $valueToCheck, RepresentsList $list ): bool
+	{
+		foreach ( $list as $item )
+		{
+			if ( $item === $valueToCheck )
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

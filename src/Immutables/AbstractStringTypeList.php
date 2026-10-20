@@ -7,7 +7,6 @@ use ComponoKit\Types\Interfaces\RepresentsString;
 use ComponoKit\Types\Lists\Exceptions\InvalidStringTypeListException;
 use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableStringTypeList;
-use ComponoKit\Types\Lists\Interfaces\RepresentsList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringTypeList;
 use ComponoKit\Types\Lists\Interfaces\RepresentsStringValueList;
 use ComponoKit\Types\Lists\Traits\RepresentingStringTypeList;
@@ -56,12 +55,12 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 		return new static( ...$types );
 	}
 
-	public function append( RepresentsString...$types ): static
+	public function append( RepresentsString ...$types ): static
 	{
 		return new static( ...$this->stringTypes, ...$types );
 	}
 
-	public function prepend( RepresentsString...$types ): static
+	public function prepend( RepresentsString ...$types ): static
 	{
 		return new static( ...$types, ...$this->stringTypes );
 	}
@@ -107,49 +106,40 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 	public function sort( ComparesTypes $comparer ): static
 	{
 		$types = $this->stringTypes;
-
-		usort(
-			$types,
-			function ( RepresentsString $firstType, RepresentsString $secondType ) use ( $comparer ): int
-			{
-				return $comparer->compare( $firstType, $secondType );
-			}
-		);
+		usort( $types, $comparer->compare( ... ) );
 
 		return new static( ...$types );
 	}
 
 	public function diff( RepresentsStringTypeList $list ): static
 	{
-		return new static(
-			...array_udiff(
-				$this->stringTypes,
-				$list->toNativeType(),
-				function ( RepresentsString $firstType, RepresentsString $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$types = [];
+		foreach ( $this->stringTypes as $type )
+		{
+			if ( !$this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	public function intersect( RepresentsStringTypeList $list ): static
 	{
-		return new static(
-			...array_uintersect(
-				$this->stringTypes,
-				$list->toNativeType(),
-				function ( RepresentsString $firstType, RepresentsString $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$types = [];
+		foreach ( $this->stringTypes as $type )
+		{
+			if ( $this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, static>
 	 */
 	public function split( int $count ): \Iterator
@@ -171,26 +161,13 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 		{
 			if ( !is_int( $index ) )
 			{
-				throw (new InvalidStringTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw new InvalidStringTypeListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 
 			if ( !static::isValueValid( $type ) )
 			{
-				throw (new InvalidStringTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw new InvalidStringTypeListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
-	}
-
-	private function existsIn( RepresentsString $typeToCheck, RepresentsList $list ): bool
-	{
-		foreach ( $list as $type )
-		{
-			if ( $type->equals( $typeToCheck ) )
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 }

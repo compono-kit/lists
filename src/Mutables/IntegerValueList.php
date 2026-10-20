@@ -4,7 +4,7 @@ namespace ComponoKit\Types\Lists\Mutables;
 
 class IntegerValueList extends AbstractIntegerValueList
 {
-	public static function isValueValid( int $value ): bool
+	protected static function isValueValid( int $value ): bool
 	{
 		return true;
 	}

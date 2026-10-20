@@ -6,7 +6,7 @@ use ComponoKit\Types\Interfaces\RepresentsFloat;
 
 class FloatTypeList extends AbstractFloatTypeList
 {
-	public static function isValueValid( RepresentsFloat $type ): bool
+	protected static function isValueValid( RepresentsFloat $type ): bool
 	{
 		return true;
 	}

@@ -21,37 +21,73 @@ abstract class AbstractMixedTypeList implements RepresentsMutableMixedTypeList
 
 	abstract protected static function isValueValid( RepresentsType $type ): bool;
 
-	public function diff( RepresentsMixedTypeList $list ): RepresentsMixedTypeList
+	public function replace( int $index, RepresentsType $type ): void
 	{
-		return new static(
-			...array_udiff(
-				$this->mixedTypes,
-				$list->toNativeType(),
-				function ( RepresentsType $firstType, RepresentsType $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$this->guardIndexExists( $index );
+		$this->validate( $type );
+
+		$this->mixedTypes[ $index ] = $type;
 	}
 
-	public function intersect( RepresentsMixedTypeList $list ): RepresentsMixedTypeList
+	public function append( RepresentsType ...$types ): void
 	{
-		return new static(
-			...array_uintersect(
-				$this->mixedTypes,
-				$list->toNativeType(),
-				function ( RepresentsType $firstType, RepresentsType $secondType ): int
-				{
-					return $firstType->equals( $secondType ) ? 0 : 1;
-				}
-			)
-		);
+		$this->validate( ...$types );
+
+		array_push( $this->mixedTypes, ...$types );
+	}
+
+	public function prepend( RepresentsType ...$types ): void
+	{
+		$this->validate( ...$types );
+
+		array_unshift( $this->mixedTypes, ...$types );
+	}
+
+	public function appendList( RepresentsMixedTypeList $list ): void
+	{
+		$types = $list->toNativeType();
+		$this->validate( ...$types );
+
+		array_push( $this->mixedTypes, ...$types );
+	}
+
+	public function prependList( RepresentsMixedTypeList $list ): void
+	{
+		$types = $list->toNativeType();
+		$this->validate( ...$types );
+
+		array_unshift( $this->mixedTypes, ...$types );
+	}
+
+	public function diff( RepresentsMixedTypeList $list ): static
+	{
+		$types = [];
+		foreach ( $this->mixedTypes as $type )
+		{
+			if ( !$this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
+	}
+
+	public function intersect( RepresentsMixedTypeList $list ): static
+	{
+		$types = [];
+		foreach ( $this->mixedTypes as $type )
+		{
+			if ( $this->existsIn( $type, $list ) )
+			{
+				$types[] = $type;
+			}
+		}
+
+		return new static( ...$types );
 	}
 
 	/**
-	 * @param int $count
-	 *
 	 * @return \Iterator<int, RepresentsMixedTypeList>
 	 */
 	public function split( int $count ): \Iterator
@@ -73,7 +109,7 @@ abstract class AbstractMixedTypeList implements RepresentsMutableMixedTypeList
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $type ) )
 			{
-				throw (new InvalidMixedTypeListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw new InvalidMixedTypeListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
 	}

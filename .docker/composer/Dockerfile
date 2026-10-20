@@ -1,14 +1,13 @@
-FROM php:8.0-alpine
-ENV XDEBUG_VERSION=3.4.2
-ARG GITHUB_TOKEN
+FROM php:8.5-alpine
 
-RUN apk add --no-cache nano icu-dev linux-headers $PHPIZE_DEPS
-RUN pecl install xdebug-${XDEBUG_VERSION}
-RUN docker-php-ext-install intl
-RUN docker-php-ext-enable xdebug
+ENV XDEBUG_VERSION=3.5.3
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-RUN composer config --global github-oauth.github.com ${GITHUB_TOKEN}
-RUN composer self-update
+RUN apk add --update --no-cache linux-headers icu-dev icu-data-full $PHPIZE_DEPS \
+	&& docker-php-ext-install intl \
+	&& pecl install xdebug-${XDEBUG_VERSION} \
+	&& docker-php-ext-enable xdebug \
+	&& apk del $PHPIZE_DEPS
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 ENTRYPOINT ["composer"]

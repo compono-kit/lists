@@ -13,6 +13,7 @@ use ComponoKit\Types\Lists\Interfaces\ComparesTypes;
 use ComponoKit\Types\Lists\Interfaces\Immutables\RepresentsImmutableBooleanTypeList;
 use ComponoKit\Types\Lists\Interfaces\MatchesType;
 use ComponoKit\Types\Lists\Tests\Unit\Immutables\fakes\OnlyTrueBooleanTypeList;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class BooleanTypeListTest extends TestCase
@@ -44,9 +45,7 @@ class BooleanTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider EqualsDataProvider
-	 */
+	#[DataProvider( 'EqualsDataProvider' )]
 	public function testEquals( RepresentsImmutableBooleanTypeList $list1, RepresentsImmutableBooleanTypeList $list2, bool $expected ): void
 	{
 		self::assertSame( $expected, $list1->equals( $list2 ) );
@@ -79,9 +78,7 @@ class BooleanTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider EqualsValuesDataProvider
-	 */
+	#[DataProvider( 'EqualsValuesDataProvider' )]
 	public function testEqualsValues( array $values1, array $values2, bool $expected ): void
 	{
 		$list1 = new BooleanTypeList( ...$values1 );
@@ -261,9 +258,7 @@ class BooleanTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider ReplaceDataProvider
-	 */
+	#[DataProvider( 'ReplaceDataProvider' )]
 	public function testReplace( array $values, int $index, bool $expected ): void
 	{
 		$list1 = new BooleanTypeList( ...$values );
@@ -297,9 +292,7 @@ class BooleanTypeListTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider ExistsDataProvider
-	 */
+	#[DataProvider( 'ExistsDataProvider' )]
 	public function testExists( array $values, int $index, bool $expected ): void
 	{
 		$list = new BooleanTypeList( ...$values );
