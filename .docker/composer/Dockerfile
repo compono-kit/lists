@@ -1,6 +1,6 @@
-FROM php:8.5-alpine
+FROM php:8.0-alpine
 
-ENV XDEBUG_VERSION=3.5.3
+ENV XDEBUG_VERSION=3.4.2
 
 RUN apk add --update --no-cache linux-headers icu-dev icu-data-full $PHPIZE_DEPS \
 	&& docker-php-ext-install intl \

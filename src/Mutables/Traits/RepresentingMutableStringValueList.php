@@ -48,6 +48,6 @@ trait RepresentingMutableStringValueList
 
 	public function sort( ComparesValues $comparer ): void
 	{
-		usort( $this->strings, $comparer->compare( ... ) );
+		usort( $this->strings, [ $comparer, 'compare' ] );
 	}
 }

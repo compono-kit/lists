@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [dev-php/8.0]
+
+### Changed
+* Maintenance branch of 2.0.0 for PHP 8.0, receives fixes only
+* Requires PHP 8.0, `compono-kit/lists-interfaces` dev-php/8.0 and for development `compono-kit/types` dev-php/8.0 and PHPUnit 9.6
+* `sort()` passes the comparer as callable array instead of first-class callable
+
 ## [2.0.0] - 2026-10-14
 
 ### Changed

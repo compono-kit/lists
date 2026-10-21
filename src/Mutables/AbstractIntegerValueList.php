@@ -117,7 +117,7 @@ abstract class AbstractIntegerValueList implements RepresentsMutableIntegerValue
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $value ) )
 			{
-				throw new InvalidIntegerValueListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidIntegerValueListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
 	}

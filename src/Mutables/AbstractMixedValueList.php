@@ -117,7 +117,7 @@ abstract class AbstractMixedValueList implements RepresentsMutableMixedValueList
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $value ) )
 			{
-				throw new InvalidMixedValueListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidMixedValueListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
 	}

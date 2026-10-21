@@ -48,6 +48,6 @@ trait RepresentingMutableBooleanTypeList
 
 	public function sort( ComparesTypes $comparer ): void
 	{
-		usort( $this->booleanTypes, $comparer->compare( ... ) );
+		usort( $this->booleanTypes, [ $comparer, 'compare' ] );
 	}
 }

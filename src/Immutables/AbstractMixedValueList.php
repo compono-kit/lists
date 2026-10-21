@@ -101,7 +101,7 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 	public function sort( ComparesValues $comparer ): static
 	{
 		$values = $this->mixedValues;
-		usort( $values, $comparer->compare( ... ) );
+		usort( $values, [ $comparer, 'compare' ] );
 
 		return new static( ...$values );
 	}
@@ -156,12 +156,12 @@ abstract class AbstractMixedValueList implements RepresentsImmutableMixedValueLi
 		{
 			if ( !is_int( $index ) )
 			{
-				throw new InvalidMixedValueListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidMixedValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 
 			if ( !static::isValueValid( $value ) )
 			{
-				throw new InvalidMixedValueListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidMixedValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
 	}

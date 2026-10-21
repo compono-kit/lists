@@ -117,7 +117,7 @@ abstract class AbstractBooleanValueList implements RepresentsMutableBooleanValue
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $value ) )
 			{
-				throw new InvalidBooleanValueListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidBooleanValueListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
 	}

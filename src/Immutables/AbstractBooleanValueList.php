@@ -101,7 +101,7 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 	public function sort( ComparesValues $comparer ): static
 	{
 		$values = $this->booleans;
-		usort( $values, $comparer->compare( ... ) );
+		usort( $values, [ $comparer, 'compare' ] );
 
 		return new static( ...$values );
 	}
@@ -156,12 +156,12 @@ abstract class AbstractBooleanValueList implements RepresentsImmutableBooleanVal
 		{
 			if ( !is_int( $index ) )
 			{
-				throw new InvalidBooleanValueListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidBooleanValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 
 			if ( !static::isValueValid( $value ) )
 			{
-				throw new InvalidBooleanValueListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidBooleanValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
 	}

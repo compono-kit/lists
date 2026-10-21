@@ -101,7 +101,7 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 	public function sort( ComparesValues $comparer ): static
 	{
 		$values = $this->strings;
-		usort( $values, $comparer->compare( ... ) );
+		usort( $values, [ $comparer, 'compare' ] );
 
 		return new static( ...$values );
 	}
@@ -156,12 +156,12 @@ abstract class AbstractStringValueList implements RepresentsImmutableStringValue
 		{
 			if ( !is_int( $index ) )
 			{
-				throw new InvalidStringValueListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidStringValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 
 			if ( !static::isValueValid( $value ) )
 			{
-				throw new InvalidStringValueListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidStringValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
 	}

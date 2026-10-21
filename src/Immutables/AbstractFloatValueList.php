@@ -101,7 +101,7 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 	public function sort( ComparesValues $comparer ): static
 	{
 		$values = $this->floats;
-		usort( $values, $comparer->compare( ... ) );
+		usort( $values, [ $comparer, 'compare' ] );
 
 		return new static( ...$values );
 	}
@@ -156,12 +156,12 @@ abstract class AbstractFloatValueList implements RepresentsImmutableFloatValueLi
 		{
 			if ( !is_int( $index ) )
 			{
-				throw new InvalidFloatValueListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidFloatValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 
 			if ( !static::isValueValid( $value ) )
 			{
-				throw new InvalidFloatValueListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidFloatValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
 	}

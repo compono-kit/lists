@@ -14,7 +14,6 @@ use ComponoKit\Types\Lists\Mutables;
 use ComponoKit\Types\Lists\Tests\Unit\Mutables\fakes\NoTwoStringTypeList;
 use ComponoKit\Types\Lists\Tests\Unit\Mutables\fakes\NoTwoStringValueList;
 use ComponoKit\Types\StringType;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class ListBehaviourTest extends TestCase
@@ -43,7 +42,9 @@ class ListBehaviourTest extends TestCase
 		yield 'mutable string value list' => [ new Mutables\StringValueList() ];
 	}
 
-	#[DataProvider( 'EmptyListDataProvider' )]
+	/**
+	 * @dataProvider EmptyListDataProvider
+	 */
 	public function testFirstOfEmptyListThrowsException( RepresentsList $list ): void
 	{
 		$this->expectExceptionObject( new MissingIndexException( 'List is empty' ) );
@@ -51,7 +52,9 @@ class ListBehaviourTest extends TestCase
 		$list->first();
 	}
 
-	#[DataProvider( 'EmptyListDataProvider' )]
+	/**
+	 * @dataProvider EmptyListDataProvider
+	 */
 	public function testLastOfEmptyListThrowsException( RepresentsList $list ): void
 	{
 		$this->expectExceptionObject( new MissingIndexException( 'List is empty' ) );
@@ -59,7 +62,9 @@ class ListBehaviourTest extends TestCase
 		$list->last();
 	}
 
-	#[DataProvider( 'EmptyListDataProvider' )]
+	/**
+	 * @dataProvider EmptyListDataProvider
+	 */
 	public function testCurrentOfEmptyListThrowsException( RepresentsList $list ): void
 	{
 		$this->expectExceptionObject( new MissingIndexException( 'Current index does not exist' ) );
@@ -67,7 +72,9 @@ class ListBehaviourTest extends TestCase
 		$list->current();
 	}
 
-	#[DataProvider( 'EmptyListDataProvider' )]
+	/**
+	 * @dataProvider EmptyListDataProvider
+	 */
 	public function testIteratingEmptyListDoesNotIterate( RepresentsList $list ): void
 	{
 		$count = 0;
@@ -123,7 +130,9 @@ class ListBehaviourTest extends TestCase
 		];
 	}
 
-	#[DataProvider( 'AppendTypeListToImmutableValueListDataProvider' )]
+	/**
+	 * @dataProvider AppendTypeListToImmutableValueListDataProvider
+	 */
 	public function testAppendAndPrependTypeListToImmutableValueList( RepresentsList $valueList, RepresentsList $typeList, array $expectedAppended, array $expectedPrepended ): void
 	{
 		self::assertSame( $expectedAppended, $valueList->appendList( $typeList )->toNativeType() );
@@ -139,7 +148,9 @@ class ListBehaviourTest extends TestCase
 		yield 'prepend type list' => [ static fn( NoTwoStringValueList $list ) => $list->prependList( new Mutables\StringTypeList( new StringType( 'two' ) ) ) ];
 	}
 
-	#[DataProvider( 'InvalidMutableWriteDataProvider' )]
+	/**
+	 * @dataProvider InvalidMutableWriteDataProvider
+	 */
 	public function testMutableValueListValidatesWrites( \Closure $write ): void
 	{
 		$list = new NoTwoStringValueList( '1' );

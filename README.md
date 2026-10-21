@@ -1,12 +1,12 @@
 # ComponoKit / Lists
 
-**Strongly typed list objects for PHP 8.5+**
+**Strongly typed list objects for PHP 8.0+**
 
 This package provides a lightweight foundation for building *domain-driven*, *immutable*, and *type-safe* list objects in PHP.
 
 ## Requirements
 
-* PHP 8.5+
+* PHP 8.0+
 * compono-kit/lists-interfaces
 
 ## Concepts

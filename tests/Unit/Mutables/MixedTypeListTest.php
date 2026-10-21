@@ -15,7 +15,6 @@ use ComponoKit\Types\Lists\Mutables\MixedTypeList;
 use ComponoKit\Types\Lists\Mutables\StringTypeList;
 use ComponoKit\Types\Lists\Tests\Unit\Mutables\fakes\NoFloatTypeList;
 use ComponoKit\Types\StringType;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class MixedTypeListTest extends TestCase
@@ -82,7 +81,9 @@ class MixedTypeListTest extends TestCase
 		];
 	}
 
-	#[DataProvider( 'EqualsDataProvider' )]
+	/**
+	 * @dataProvider EqualsDataProvider
+	 */
 	public function testEquals( RepresentsMutableMixedTypeList $originalList, RepresentsMutableMixedTypeList $actualList, bool $expected ): void
 	{
 		self::assertSame( $expected, $originalList->equals( $actualList ) );
@@ -115,7 +116,9 @@ class MixedTypeListTest extends TestCase
 		];
 	}
 
-	#[DataProvider( 'EqualsValuesDataProvider' )]
+	/**
+	 * @dataProvider EqualsValuesDataProvider
+	 */
 	public function testEqualsValues( array $values1, array $values2, bool $expected ): void
 	{
 		$originalList = new MixedTypeList( ...$values1 );
@@ -297,7 +300,9 @@ class MixedTypeListTest extends TestCase
 		];
 	}
 
-	#[DataProvider( 'ReplaceDataProvider' )]
+	/**
+	 * @dataProvider ReplaceDataProvider
+	 */
 	public function testReplace( array $values, int $index, string $expected ): void
 	{
 		$list  = new MixedTypeList( ...$values );
@@ -331,7 +336,9 @@ class MixedTypeListTest extends TestCase
 		];
 	}
 
-	#[DataProvider( 'ExistsDataProvider' )]
+	/**
+	 * @dataProvider ExistsDataProvider
+	 */
 	public function testExists( array $values, int $index, bool $expected ): void
 	{
 		$list = new MixedTypeList( ...$values );

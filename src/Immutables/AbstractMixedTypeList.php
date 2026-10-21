@@ -106,7 +106,7 @@ abstract class AbstractMixedTypeList implements RepresentsImmutableMixedTypeList
 	public function sort( ComparesTypes $comparer ): static
 	{
 		$types = $this->mixedTypes;
-		usort( $types, $comparer->compare( ... ) );
+		usort( $types, [ $comparer, 'compare' ] );
 
 		return new static( ...$types );
 	}
@@ -161,12 +161,12 @@ abstract class AbstractMixedTypeList implements RepresentsImmutableMixedTypeList
 		{
 			if ( !is_int( $index ) )
 			{
-				throw new InvalidMixedTypeListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw (new InvalidMixedTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 
 			if ( !static::isValueValid( $type ) )
 			{
-				throw new InvalidMixedTypeListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw (new InvalidMixedTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
 	}

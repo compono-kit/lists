@@ -109,7 +109,7 @@ abstract class AbstractBooleanTypeList implements RepresentsMutableBooleanTypeLi
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $type ) )
 			{
-				throw new InvalidBooleanTypeListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw (new InvalidBooleanTypeListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
 	}

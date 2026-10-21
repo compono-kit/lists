@@ -117,7 +117,7 @@ abstract class AbstractFloatValueList implements RepresentsMutableFloatValueList
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $value ) )
 			{
-				throw new InvalidFloatValueListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidFloatValueListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
 	}

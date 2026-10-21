@@ -48,6 +48,6 @@ trait RepresentingMutableFloatTypeList
 
 	public function sort( ComparesTypes $comparer ): void
 	{
-		usort( $this->floatTypes, $comparer->compare( ... ) );
+		usort( $this->floatTypes, [ $comparer, 'compare' ] );
 	}
 }

@@ -48,6 +48,6 @@ trait RepresentingMutableMixedTypeList
 
 	public function sort( ComparesTypes $comparer ): void
 	{
-		usort( $this->mixedTypes, $comparer->compare( ... ) );
+		usort( $this->mixedTypes, [ $comparer, 'compare' ] );
 	}
 }

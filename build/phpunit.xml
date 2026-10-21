@@ -2,23 +2,17 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="../vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="../tests/bootstrap.php"
-         cacheDirectory="../.phpunit.cache"
+         cacheResultFile="../.phpunit.cache/test-results"
          beStrictAboutOutputDuringTests="true"
+         convertDeprecationsToExceptions="true"
          failOnRisky="true"
          failOnWarning="true"
-         failOnDeprecation="true"
-         failOnPhpunitDeprecation="true"
-         failOnNotice="true"
-         displayDetailsOnTestsThatTriggerDeprecations="true"
-         displayDetailsOnTestsThatTriggerWarnings="true"
-         displayDetailsOnTestsThatTriggerNotices="true"
-         displayDetailsOnPhpunitDeprecations="true"
          colors="true">
-	<source>
+	<coverage>
 		<include>
-			<directory>../src</directory>
+			<directory suffix=".php">../src</directory>
 		</include>
-	</source>
+	</coverage>
 	<testsuites>
 		<testsuite name="Unit">
 			<directory>../tests/Unit</directory>

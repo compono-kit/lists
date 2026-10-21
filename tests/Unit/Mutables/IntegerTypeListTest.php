@@ -11,7 +11,6 @@ use ComponoKit\Types\Lists\Interfaces\MatchesType;
 use ComponoKit\Types\Lists\Interfaces\Mutables\RepresentsMutableIntegerTypeList;
 use ComponoKit\Types\Lists\Mutables\IntegerTypeList;
 use ComponoKit\Types\Lists\Tests\Unit\Mutables\fakes\NoTwoIntegerTypeList;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class IntegerTypeListTest extends TestCase
@@ -43,7 +42,9 @@ class IntegerTypeListTest extends TestCase
 		];
 	}
 
-	#[DataProvider( 'EqualsDataProvider' )]
+	/**
+	 * @dataProvider EqualsDataProvider
+	 */
 	public function testEquals( RepresentsMutableIntegerTypeList $originalList, RepresentsMutableIntegerTypeList $actualList, bool $expected ): void
 	{
 		self::assertSame( $expected, $originalList->equals( $actualList ) );
@@ -76,7 +77,9 @@ class IntegerTypeListTest extends TestCase
 		];
 	}
 
-	#[DataProvider( 'EqualsValuesDataProvider' )]
+	/**
+	 * @dataProvider EqualsValuesDataProvider
+	 */
 	public function testEqualsValues( array $values1, array $values2, bool $expected ): void
 	{
 		$originalList = new IntegerTypeList( ...$values1 );
@@ -246,7 +249,9 @@ class IntegerTypeListTest extends TestCase
 		];
 	}
 
-	#[DataProvider( 'ReplaceDataProvider' )]
+	/**
+	 * @dataProvider ReplaceDataProvider
+	 */
 	public function testReplace( array $values, int $index, int $expected ): void
 	{
 		$list  = new IntegerTypeList( ...$values );
@@ -280,7 +285,9 @@ class IntegerTypeListTest extends TestCase
 		];
 	}
 
-	#[DataProvider( 'ExistsDataProvider' )]
+	/**
+	 * @dataProvider ExistsDataProvider
+	 */
 	public function testExists( array $values, int $index, bool $expected ): void
 	{
 		$list = new IntegerTypeList( ...$values );

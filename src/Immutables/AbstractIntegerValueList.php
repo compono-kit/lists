@@ -101,7 +101,7 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 	public function sort( ComparesValues $comparer ): static
 	{
 		$values = $this->integers;
-		usort( $values, $comparer->compare( ... ) );
+		usort( $values, [ $comparer, 'compare' ] );
 
 		return new static( ...$values );
 	}
@@ -156,12 +156,12 @@ abstract class AbstractIntegerValueList implements RepresentsImmutableIntegerVal
 		{
 			if ( !is_int( $index ) )
 			{
-				throw new InvalidIntegerValueListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidIntegerValueListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 
 			if ( !static::isValueValid( $value ) )
 			{
-				throw new InvalidIntegerValueListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidIntegerValueListException( 'Invalid value in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
 	}

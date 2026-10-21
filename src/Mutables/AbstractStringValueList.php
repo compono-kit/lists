@@ -117,7 +117,7 @@ abstract class AbstractStringValueList implements RepresentsMutableStringValueLi
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $value ) )
 			{
-				throw new InvalidStringValueListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $value, ] );
+				throw (new InvalidStringValueListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $value, ] );
 			}
 		}
 	}

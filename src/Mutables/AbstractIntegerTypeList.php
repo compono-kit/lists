@@ -109,7 +109,7 @@ abstract class AbstractIntegerTypeList implements RepresentsMutableIntegerTypeLi
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $type ) )
 			{
-				throw new InvalidIntegerTypeListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw (new InvalidIntegerTypeListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
 	}

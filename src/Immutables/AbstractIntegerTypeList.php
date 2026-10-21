@@ -106,7 +106,7 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 	public function sort( ComparesTypes $comparer ): static
 	{
 		$types = $this->integerTypes;
-		usort( $types, $comparer->compare( ... ) );
+		usort( $types, [ $comparer, 'compare' ] );
 
 		return new static( ...$types );
 	}
@@ -161,12 +161,12 @@ abstract class AbstractIntegerTypeList implements RepresentsImmutableIntegerType
 		{
 			if ( !is_int( $index ) )
 			{
-				throw new InvalidIntegerTypeListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw (new InvalidIntegerTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 
 			if ( !static::isValueValid( $type ) )
 			{
-				throw new InvalidIntegerTypeListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw (new InvalidIntegerTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
 	}

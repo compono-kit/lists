@@ -48,6 +48,6 @@ trait RepresentingMutableIntegerTypeList
 
 	public function sort( ComparesTypes $comparer ): void
 	{
-		usort( $this->integerTypes, $comparer->compare( ... ) );
+		usort( $this->integerTypes, [ $comparer, 'compare' ] );
 	}
 }

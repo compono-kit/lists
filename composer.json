@@ -11,14 +11,14 @@
 		}
 	],
 	"require": {
-		"php": ">=8.5",
-		"compono-kit/lists-interfaces": "^2.0.0"
+		"php": ">=8.0",
+		"compono-kit/lists-interfaces": "dev-php/8.0"
 	},
 	"require-dev": {
 		"ext-intl": "*",
-		"phpunit/phpunit": "^12.0.0",
-		"compono-kit/types-interfaces": "^2.0.0",
-		"compono-kit/types": "^2.0.0"
+		"phpunit/phpunit": "^9.6.0",
+		"compono-kit/types-interfaces": "dev-php/8.0",
+		"compono-kit/types": "dev-php/8.0"
 	},
 	"autoload": {
 		"psr-4": {

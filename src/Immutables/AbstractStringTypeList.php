@@ -106,7 +106,7 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 	public function sort( ComparesTypes $comparer ): static
 	{
 		$types = $this->stringTypes;
-		usort( $types, $comparer->compare( ... ) );
+		usort( $types, [ $comparer, 'compare' ] );
 
 		return new static( ...$types );
 	}
@@ -161,12 +161,12 @@ abstract class AbstractStringTypeList implements RepresentsImmutableStringTypeLi
 		{
 			if ( !is_int( $index ) )
 			{
-				throw new InvalidStringTypeListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw (new InvalidStringTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 
 			if ( !static::isValueValid( $type ) )
 			{
-				throw new InvalidStringTypeListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw (new InvalidStringTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
 	}

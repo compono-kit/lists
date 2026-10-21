@@ -109,7 +109,7 @@ abstract class AbstractStringTypeList implements RepresentsMutableStringTypeList
 		{
 			if ( !is_int( $index ) || !static::isValueValid( $type ) )
 			{
-				throw new InvalidStringTypeListException( 'Invalid ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw (new InvalidStringTypeListException( 'Invalid ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
 	}

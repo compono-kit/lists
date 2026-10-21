@@ -106,7 +106,7 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 	public function sort( ComparesTypes $comparer ): static
 	{
 		$types = $this->booleanTypes;
-		usort( $types, $comparer->compare( ... ) );
+		usort( $types, [ $comparer, 'compare' ] );
 
 		return new static( ...$types );
 	}
@@ -161,12 +161,12 @@ abstract class AbstractBooleanTypeList implements RepresentsImmutableBooleanType
 		{
 			if ( !is_int( $index ) )
 			{
-				throw new InvalidBooleanTypeListException( 'Invalid index in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw (new InvalidBooleanTypeListException( 'Invalid index in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 
 			if ( !static::isValueValid( $type ) )
 			{
-				throw new InvalidBooleanTypeListException( 'Invalid value in ' . static::class )->setContext( [ 'index' => $index, 'value' => $type, ] );
+				throw (new InvalidBooleanTypeListException( 'Invalid value in ' . static::class ))->setContext( [ 'index' => $index, 'value' => $type, ] );
 			}
 		}
 	}
